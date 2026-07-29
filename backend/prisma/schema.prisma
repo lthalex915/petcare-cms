@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  VIEWER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum FoodType {
+  WET
+  DRY
+  BOTH
+}
+
+enum AppetiteLevel {
+  NORMAL
+  DECREASED
+  INCREASED
+  NONE
+}
+
+enum Mood {
+  PLAYFUL
+  CALM
+  AGITATED
+  LETHARGIC
+  HIDING
+}
+
+enum StoolType {
+  NORMAL
+  SOFT
+  DIARRHEA
+  CONSTIPATION
+  NONE
+}
+
+enum ActivityType {
+  PLAY
+  WALK
+  RUN
+  SLEEP
+  GROOMING
+  EXPLORING
+  OTHER
+}
+
+enum Severity {
+  INFO
+  MINOR
+  MODERATE
+  CRITICAL
+}
+
+enum SupplyType {
+  DRY_FOOD
+  WET_FOOD
+  LITTER
+  TREATS
+  SUPPLEMENTS
+  MEDICATION
+  OTHER
+}
+
+enum ReportType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum ProviderType {
+  OPENROUTER
+  OPENAI_COMPAT
+}
+
+model User {
+  id               String      @id @default(cuid())
+  username         String      @unique
+  passwordHash     String
+  displayName      String
+  role             Role        @default(STAFF)
+  isActive         Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  dailyLogs        DailyLog[]
+  reports          Report[]    @relation("ReportAuthor")
+  updatedLlmConfig LlmConfig[] @relation("LlmConfigUpdatedBy")
+}
+
+model Pet {
+  id              String           @id @default(cuid())
+  nameZh          String
+  nameEn          String           @unique
+  species         String           @default("Cat")
+  breed           String
+  gender          Gender
+  dob             DateTime
+  weight          Float?
+  avatarSvg       String?
+  isActive        Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  feedingRecords  FeedingRecord[]
+  healthRecords   HealthRecord[]
+  activityRecords ActivityRecord[]
+  incidentRecords IncidentRecord[]
+  diaryEntries    DiaryEntry[]
+}
+
+model DailyLog {
+  id          String            @id @default(cuid())
+  date        DateTime          @unique
+  summary     String?
+  createdById String
+  createdBy   User              @relation(fields: [createdById], references: [id])
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  feedings    FeedingRecord[]
+  health      HealthRecord[]
+  activities  ActivityRecord[]
+  incidents   IncidentRecord[]
+  litterBoxes LitterBoxRecord[]
+  supplies    SupplyRecord[]
+  diaryEntries DiaryEntry[]
+}
+
+model FeedingRecord {
+  id           String   @id @default(cuid())
+  dailyLogId   String
+  dailyLog     DailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  petId        String
+  pet          Pet      @relation(fields: [petId], references: [id])
+  mealTime     DateTime
+  foodType     FoodType
+  wetFoodBrand String?
+  wetFoodQty   Float?
+  dryFoodGrams Float?
+  isAutoFeeder Boolean  @default(false)
+  consumedBy   String[]
+  notes        String?
+  createdAt    DateTime @default(now())
+}
+
+model HealthRecord {
+  id          String        @id @default(cuid())
+  dailyLogId  String
+  dailyLog    DailyLog      @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  petId       String
+  pet         Pet           @relation(fields: [petId], references: [id])
+  weightKg    Float?
+  temperature Float?
+  appetite    AppetiteLevel?
+  mood        Mood?
+  stool       StoolType?
+  vomit       Boolean       @default(false)
+  medication  String?
+  symptoms    String?
+  notes       String?
+  createdAt   DateTime      @default(now())
+}
+
+model ActivityRecord {
+  id           String       @id @default(cuid())
+  dailyLogId   String
+  dailyLog     DailyLog     @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  petId        String
+  pet          Pet          @relation(fields: [petId], references: [id])
+  activityType ActivityType
+  startTime    DateTime?
+  durationMin  Int?
+  notes        String?
+  createdAt    DateTime     @default(now())
+}
+
+model IncidentRecord {
+  id          String    @id @default(cuid())
+  dailyLogId  String
+  dailyLog    DailyLog  @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  petId       String
+  pet         Pet       @relation(fields: [petId], references: [id])
+  severity    Severity
+  title       String
+  description String
+  actionTaken String?
+  resolved    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+model LitterBoxRecord {
+  id           String   @id @default(cuid())
+  dailyLogId   String
+  dailyLog     DailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  boxNumber    Int
+  fullyChanged Boolean  @default(false)
+  scooped      Boolean  @default(true)
+  notes        String?
+  createdAt    DateTime @default(now())
+}
+
+model SupplyRecord {
+  id         String     @id @default(cuid())
+  dailyLogId String
+  dailyLog   DailyLog   @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  supplyType SupplyType
+  refilled   Boolean    @default(false)
+  brand      String?
+  quantity   String?
+  notes      String?
+  createdAt  DateTime   @default(now())
+}
+
+model DiaryEntry {
+  id         String   @id @default(cuid())
+  dailyLogId String
+  dailyLog   DailyLog @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  petId      String
+  pet        Pet      @relation(fields: [petId], references: [id])
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+model Report {
+  id            String     @id @default(cuid())
+  type          ReportType
+  periodStart   DateTime
+  periodEnd     DateTime
+  title         String
+  htmlContent   String
+  rawData       Json
+  generatedById String
+  generatedBy   User       @relation("ReportAuthor", fields: [generatedById], references: [id])
+  petIds        String[]
+  createdAt     DateTime   @default(now())
+}
+
+model LlmConfig {
+  id           String       @id @default("default")
+  provider     ProviderType
+  apiBaseUrl   String
+  apiKey       String
+  defaultModel String       @default("deepseek/deepseek-v4-flash")
+  temperature  Float        @default(0.3)
+  maxTokens    Int          @default(4000)
+  isActive     Boolean      @default(true)
+  updatedAt    DateTime     @updatedAt
+  updatedById  String?
+  updatedBy    User?        @relation("LlmConfigUpdatedBy", fields: [updatedById], references: [id])
+}

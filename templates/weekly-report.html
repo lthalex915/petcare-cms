@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weekly Clinical Report — PetCare CMS</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+font-family: Arial, Helvetica, sans-serif;
+background: #F5F5F5; padding: 40px;
+display: flex; flex-direction: column; align-items: center;
+}
+#clinical-report {
+max-width: 210mm; width: 100%;
+margin: 0 auto; background: #FFFFFF;
+padding: 30px; box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+}
+@media print {
+body { background: #FFF; padding: 0; }
+#clinical-report { box-shadow: none; padding: 20px; }
+}
+h1 { font-size: 20px; font-weight: 700; color: #000; margin: 5px 0; }
+h2 { font-size: 14px; font-weight: 700; color: #000; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; }
+h3 { font-size: 12px; font-weight: 700; color: #333; margin: 0 0 6px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px; }
+th { padding: 8px; text-align: left; font-weight: 700; color: #000; background: #F5F5F5; border-bottom: 2px solid #333; }
+td { padding: 6px 8px; color: #333; border-bottom: 1px solid #DDD; }
+tr:nth-child(even) td { background: #F9F9F9; }
+.header { border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
+.header-row { display: flex; align-items: center; gap: 12px; }
+.header-meta { font-size: 12px; color: #666; margin-top: 4px; }
+.patient-roster { border: 1px solid #333; padding: 12px; margin-bottom: 20px; }
+.exec-summary { border-left: 3px solid #333; padding-left: 12px; margin-bottom: 20px; }
+.exec-summary p { font-size: 12px; color: #333; line-height: 1.6; margin: 0; }
+.section { margin-bottom: 20px; }
+.section-head { border-bottom: 1px solid #999; padding-bottom: 4px; margin-bottom: 10px; }
+.rec-box { background: #F9F9F9; border: 1px solid #333; padding: 12px; margin-bottom: 20px; }
+.rec-box ol { font-size: 12px; color: #333; line-height: 1.8; margin: 0; padding-left: 20px; }
+.footer { border-top: 1px solid #999; padding-top: 10px; margin-top: 20px; font-size: 10px; color: #999; }
+.badge { display: inline-block; padding: 2px 6px; font-size: 10px; font-weight: 700; border: 1px solid #333; margin-right: 4px; }
+.badge-info { border-color: #999; color: #666; }
+.badge-warn { border-color: #000; background: #000; color: #FFF; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 15px; }
+.kpi-card { border: 1px solid #CCC; padding: 12px; text-align: center; }
+.kpi-value { font-size: 24px; font-weight: 700; color: #000; }
+.kpi-label { font-size: 10px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-delta { font-size: 11px; margin-top: 2px; }
+.kpi-delta.up { color: #333; }
+.kpi-delta.down { color: #666; }
+hr { border: none; border-top: 1px solid #DDD; margin: 15px 0; }
+</style>
+</head>
+<body>
+<div id="clinical-report">
+
+<!-- HEADER -->
+<div class="header">
+<div class="header-row">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<rect x="3" y="5" width="18" height="16" rx="2"/>
+<line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/>
+<text x="12" y="19" font-size="8" text-anchor="middle" fill="#000" font-weight="700">W</text>
+</svg>
+<div>
+<h1>WEEKLY CLINICAL REPORT</h1>
+<div class="header-meta">
+<span>Report ID: PC-2026-W13</span>  | 
+<span>Period: 22 Mar 2026 — 28 Mar 2026</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- PATIENT ROSTER -->
+<div class="patient-roster">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<circle cx="7" cy="10" r="2"/><circle cx="17" cy="10" r="2"/>
+<path d="M4 16C4 16 6 20 12 20C18 20 20 16 20 16"/>
+</svg>
+PATIENT ROSTER
+</h2>
+<table>
+<thead>
+<tr><th>Patient</th><th>Breed</th><th>Sex</th><th>DOB</th><th>Age</th><th>Current Weight</th><th>Weekly Change</th></tr>
+</thead>
+<tbody>
+<tr><td>Banban (餅餅)</td><td>British Shorthair</td><td>F</td><td>11 Aug 2025</td><td>7 months</td><td>3.8 kg</td><td>+0.1 kg</td></tr>
+<tr><td>Gogo (糕糕)</td><td>Maine Coon</td><td>M</td><td>02 Jan 2026</td><td>3 months</td><td>2.1 kg</td><td>+0.2 kg</td></tr>
+<tr><td>Pawpaw (包包)</td><td>Maine Coon</td><td>M</td><td>02 Jan 2026</td><td>3 months</td><td>2.3 kg</td><td>+0.15 kg</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- EXECUTIVE SUMMARY -->
+<div class="exec-summary">
+<h2>WEEKLY SUMMARY</h2>
+<p>During the period of 22–28 March 2026, all three patients were under daily observation. This week marked positive weight gain across all patients, with Gogo and Pawpaw showing expected growth trajectories for Maine Coon kittens. Banban's weight remained stable with a slight increase. One incident was recorded (Pawpaw — minor ear scratch, resolved). Gogo's intermittent lethargy was identified as a potential concern. Feeding patterns remained consistent with an average of 4.5 wet food cans and 280 g dry food consumed per day across all patients. Litter box maintenance was performed daily. Overall clinical status is satisfactory.</p>
+</div>
+
+<hr>
+
+<!-- KPI Section -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<line x1="4" y1="20" x2="20" y2="20"/><line x1="6" y1="16" x2="6" y2="20"/>
+<line x1="12" y1="10" x2="12" y2="20"/><line x1="18" y1="6" x2="18" y2="20"/>
+</svg>
+WEEKLY KEY PERFORMANCE INDICATORS
+</h2>
+</div>
+<div class="kpi-grid">
+<div class="kpi-card">
+<div class="kpi-value">31</div>
+<div class="kpi-label">Total Feedings</div>
+<div class="kpi-delta up">+2 vs prior week</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-value">28</div>
+<div class="kpi-label">Wet Food Cans</div>
+<div class="kpi-delta up">+3 vs prior week</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-value">1</div>
+<div class="kpi-label">Incidents</div>
+<div class="kpi-delta down">-1 vs prior week</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-value">7</div>
+<div class="kpi-label">Litter Changes</div>
+<div class="kpi-delta up">Consistent</div>
+</div>
+</div>
+</div>
+
+<hr>
+
+<!-- FEEDING STATISTICS -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<ellipse cx="12" cy="14" rx="8" ry="4"/><path d="M4 14C4 14 4 18 12 18C20 18 20 14 20 14"/>
+</svg>
+FEEDING STATISTICS
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Patient</th><th>Wet Food (weekly)</th><th>Dry Food (weekly)</th><th>Avg Daily Wet</th><th>Avg Daily Dry</th><th>Preferred Brand</th></tr>
+</thead>
+<tbody>
+<tr><td>Banban</td><td>9 cans</td><td>105 g</td><td>1.3 cans</td><td>15 g</td><td>Ziwi Peak</td></tr>
+<tr><td>Gogo</td><td>10 cans</td><td>84 g</td><td>1.4 cans</td><td>12 g</td><td>Wellness</td></tr>
+<tr><td>Pawpaw</td><td>9 cans</td><td>91 g</td><td>1.3 cans</td><td>13 g</td><td>Wellness</td></tr>
+</tbody>
+</table>
+<div style="font-size: 11px; color: #666; margin-top: 6px;">
+<strong>Brand Distribution:</strong> Ziwi Peak (15 cans, 53.6%), Wellness (13 cans, 46.4%).
+<strong>Total Dry Food:</strong> 280 g consumed via auto feeder.
+</div>
+</div>
+
+<hr>
+
+<!-- TREND ANALYSIS -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M2 20L8 14L13 18L22 8"/><path d="M18 8H22V12"/>
+</svg>
+TREND ANALYSIS
+</h2>
+</div>
+
+<h3>Weight Trends (Weekly Comparison)</h3>
+<table>
+<thead>
+<tr><th>Patient</th><th>Week Start</th><th>Week End</th><th>Change</th><th>Assessment</th></tr>
+</thead>
+<tbody>
+<tr><td>Banban</td><td>3.7 kg</td><td>3.8 kg</td><td>+0.1 kg</td><td>Stable, appropriate for age</td></tr>
+<tr><td>Gogo</td><td>1.9 kg</td><td>2.1 kg</td><td>+0.2 kg</td><td>Good growth trajectory</td></tr>
+<tr><td>Pawpaw</td><td>2.15 kg</td><td>2.3 kg</td><td>+0.15 kg</td><td>Consistent with littermate</td></tr>
+</tbody>
+</table>
+
+<h3 style="margin-top: 12px;">Appetite Patterns</h3>
+<table>
+<thead>
+<tr><th>Patient</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th><th>Trend</th></tr>
+</thead>
+<tbody>
+<tr><td>Banban</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>Stable</td></tr>
+<tr><td>Gogo</td><td>I</td><td>I</td><td>I</td><td>N</td><td>I</td><td>I</td><td>I</td><td>Increased (6/7 days)</td></tr>
+<tr><td>Pawpaw</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>N</td><td>Stable</td></tr>
+</tbody>
+</table>
+<div style="font-size: 11px; color: #666; margin-top: 4px;">N = Normal, I = Increased, D = Decreased, A = Absent</div>
+
+<h3 style="margin-top: 12px;">Mood Distribution</h3>
+<table>
+<thead>
+<tr><th>Patient</th><th>Playful</th><th>Calm</th><th>Lethargic</th><th>Agitated</th><th>Dominant Mood</th></tr>
+</thead>
+<tbody>
+<tr><td>Banban</td><td>5 days</td><td>2 days</td><td>0</td><td>0</td><td>Playful</td></tr>
+<tr><td>Gogo</td><td>1 day</td><td>1 day</td><td>5 days</td><td>0</td><td>Lethargic</td></tr>
+<tr><td>Pawpaw</td><td>3 days</td><td>3 days</td><td>1 day</td><td>0</td><td>Playful / Calm</td></tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+
+<!-- INCIDENT REVIEW -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M12 2L2 22H22L12 2Z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="1"/>
+</svg>
+INCIDENT REVIEW
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Date</th><th>Patient</th><th>Severity</th><th>Description</th><th>Status</th></tr>
+</thead>
+<tbody>
+<tr><td>22 Mar</td><td>Gogo</td><td><span class="badge badge-info">INFO</span></td><td>Mild sneezing episode, 3 episodes in 1 hour. No nasal discharge.</td><td>Resolved — self-limiting</td></tr>
+<tr><td>25 Mar</td><td>Banban</td><td><span class="badge badge-info">INFO</span></td><td>Refused breakfast portion of Wellness brand. Accepted Ziwi Peak substitute.</td><td>Resolved — preference noted</td></tr>
+<tr><td>28 Mar</td><td>Pawpaw</td><td><span class="badge badge-info">MINOR</span></td><td>Superficial scratch to left ear pinna, 0.5 cm.</td><td>Resolved — treated</td></tr>
+</tbody>
+</table>
+<div style="font-size: 11px; color: #666; margin-top: 6px;">
+<strong>Recurring Patterns:</strong> No recurring incidents identified. Gogo's sneezing episode was isolated and self-limiting.
+</div>
+</div>
+
+<hr>
+
+<!-- CONSOLIDATED DIARY -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<rect x="6" y="3" width="12" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/>
+</svg>
+CONSOLIDATED DIARY — KEY OBSERVATIONS
+</h2>
+</div>
+<div style="font-size: 12px; color: #333; line-height: 1.8;">
+<p><strong>Banban:</strong> Consistent energy levels throughout the week. Demonstrates a clear preference for Ziwi Peak over Wellness brand wet food. Responds well to interactive play. Coat condition remains excellent. No health concerns.</p>
+<p style="margin-top: 8px;"><strong>Gogo:</strong> Lethargy was the predominant finding this week, present on 5 out of 7 days. Appetite remained increased, which is atypical for a lethargic presentation. Weight gain of 0.2 kg was appropriate. A single sneezing episode on 22 Mar resolved without intervention. Requires close monitoring.</p>
+<p style="margin-top: 8px;"><strong>Pawpaw:</strong> Generally healthy with balanced mood. Weight gain consistent with Gogo. The ear scratch on 28 Mar was minor and has been managed appropriately. No behavioural or health concerns otherwise.</p>
+</div>
+</div>
+
+<hr>
+
+<!-- RECOMMENDATIONS -->
+<div class="rec-box">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M12 2L15 9H22L16 14L18 22L12 17L6 22L8 14L2 9H9L12 2Z"/>
+</svg>
+CLINICAL RECOMMENDATIONS
+</h2>
+<ol>
+<li>Schedule a veterinary consultation for Gogo if lethargy persists beyond 72 hours into the next week. Consider basic blood work to rule out underlying conditions.</li>
+<li>Continue weight monitoring three times per week for all patients, with particular attention to Gogo's growth trajectory.</li>
+<li>Maintain current feeding regimen. Consider introducing a third wet food brand to broaden palatability.</li>
+<li>Increase environmental enrichment activities, particularly for Gogo, to encourage movement and stimulation.</li>
+<li>Restock supplies: order 2 cases of Ziwi Peak (chicken) and 2 cases of Wellness (pate) to maintain 2-week inventory.</li>
+<li>Continue daily ear inspection for Pawpaw until the scratch has fully epithelialised.</li>
+</ol>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+<div>Generated by PetCare CMS Clinical Report System</div>
+<div>Report generated: 28 Mar 2026, 22:00 UTC</div>
+<div>Period: Week 13, 2026 (22 Mar — 28 Mar)</div>
+<div>Model: deepseek/deepseek-v4-flash</div>
+<div>Attending: Dr. Sarah Chen</div>
+</div>
+
+</div>
+</body>
+</html>

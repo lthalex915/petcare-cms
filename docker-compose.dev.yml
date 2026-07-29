@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: petcare_cms
+      POSTGRES_USER: petcare
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-petcare}
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://petcare:${DB_PASSWORD:-petcare}@postgres:5432/petcare_cms
+      JWT_SECRET: ${JWT_SECRET:-petcare-dev-secret}
+      PORT: 4000
+      APP_URL: http://localhost:5173
+      APP_TITLE: PetCare CMS
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "4000:4000"
+    command: sh -c "npx prisma generate && npx prisma migrate dev --name init && npx prisma db seed && npm run dev"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+
+volumes:
+  postgres_data_dev:

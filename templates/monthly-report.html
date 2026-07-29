@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monthly Clinical Report — PetCare CMS</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+font-family: Arial, Helvetica, sans-serif;
+background: #F5F5F5; padding: 40px;
+display: flex; flex-direction: column; align-items: center;
+}
+#clinical-report {
+max-width: 210mm; width: 100%;
+margin: 0 auto; background: #FFFFFF;
+padding: 30px; box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+}
+@media print {
+body { background: #FFF; padding: 0; }
+#clinical-report { box-shadow: none; padding: 20px; }
+}
+h1 { font-size: 20px; font-weight: 700; color: #000; margin: 5px 0; }
+h2 { font-size: 14px; font-weight: 700; color: #000; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; }
+h3 { font-size: 12px; font-weight: 700; color: #333; margin: 0 0 6px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px; }
+th { padding: 8px; text-align: left; font-weight: 700; color: #000; background: #F5F5F5; border-bottom: 2px solid #333; }
+td { padding: 6px 8px; color: #333; border-bottom: 1px solid #DDD; }
+tr:nth-child(even) td { background: #F9F9F9; }
+.header { border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
+.header-row { display: flex; align-items: center; gap: 12px; }
+.header-meta { font-size: 12px; color: #666; margin-top: 4px; }
+.patient-roster { border: 1px solid #333; padding: 12px; margin-bottom: 20px; }
+.exec-summary { border-left: 3px solid #333; padding-left: 12px; margin-bottom: 20px; }
+.exec-summary p { font-size: 12px; color: #333; line-height: 1.6; margin: 0; }
+.section { margin-bottom: 20px; }
+.section-head { border-bottom: 1px solid #999; padding-bottom: 4px; margin-bottom: 10px; }
+.rec-box { background: #F9F9F9; border: 1px solid #333; padding: 12px; margin-bottom: 20px; }
+.rec-box ol { font-size: 12px; color: #333; line-height: 1.8; margin: 0; padding-left: 20px; }
+.footer { border-top: 1px solid #999; padding-top: 10px; margin-top: 20px; font-size: 10px; color: #999; }
+.badge { display: inline-block; padding: 2px 6px; font-size: 10px; font-weight: 700; border: 1px solid #333; margin-right: 4px; }
+.badge-info { border-color: #999; color: #666; }
+.badge-warn { border-color: #000; background: #000; color: #FFF; }
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 15px; }
+.kpi-card { border: 1px solid #CCC; padding: 12px; text-align: center; }
+.kpi-value { font-size: 24px; font-weight: 700; color: #000; }
+.kpi-label { font-size: 10px; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-delta { font-size: 11px; margin-top: 2px; }
+hr { border: none; border-top: 1px solid #DDD; margin: 15px 0; }
+.growth-bar { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+.growth-bar-track { flex: 1; height: 8px; background: #F5F5F5; position: relative; }
+.growth-bar-fill { height: 100%; background: #333; }
+.growth-label { font-size: 11px; color: #333; min-width: 80px; }
+.growth-value { font-size: 11px; color: #666; min-width: 60px; text-align: right; }
+.warning-box { border: 1px solid #000; background: #F9F9F9; padding: 12px; margin-bottom: 15px; }
+.warning-box h3 { margin-bottom: 4px; }
+.warning-box p { font-size: 12px; color: #333; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div id="clinical-report">
+
+<!-- HEADER -->
+<div class="header">
+<div class="header-row">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<rect x="3" y="5" width="18" height="16" rx="2"/>
+<line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/>
+<text x="12" y="19" font-size="8" text-anchor="middle" fill="#000" font-weight="700">M</text>
+</svg>
+<div>
+<h1>MONTHLY CLINICAL REPORT</h1>
+<div class="header-meta">
+<span>Report ID: PC-2026-03</span>  | 
+<span>Period: 01 Mar 2026 — 31 Mar 2026</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- PATIENT ROSTER -->
+<div class="patient-roster">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<circle cx="7" cy="10" r="2"/><circle cx="17" cy="10" r="2"/>
+<path d="M4 16C4 16 6 20 12 20C18 20 20 16 20 16"/>
+</svg>
+PATIENT ROSTER
+</h2>
+<table>
+<thead>
+<tr><th>Patient</th><th>Breed</th><th>Sex</th><th>DOB</th><th>Age</th><th>Month Start</th><th>Month End</th><th>Monthly Change</th></tr>
+</thead>
+<tbody>
+<tr><td>Banban (餅餅)</td><td>British Shorthair</td><td>F</td><td>11 Aug 2025</td><td>7 months</td><td>3.5 kg</td><td>3.8 kg</td><td>+0.3 kg</td></tr>
+<tr><td>Gogo (糕糕)</td><td>Maine Coon</td><td>M</td><td>02 Jan 2026</td><td>3 months</td><td>1.5 kg</td><td>2.1 kg</td><td>+0.6 kg</td></tr>
+<tr><td>Pawpaw (包包)</td><td>Maine Coon</td><td>M</td><td>02 Jan 2026</td><td>3 months</td><td>1.6 kg</td><td>2.3 kg</td><td>+0.7 kg</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- EXECUTIVE SUMMARY -->
+<div class="exec-summary">
+<h2>MONTHLY SUMMARY</h2>
+<p>March 2026 was a month of significant growth and development for all three patients. Banban reached 3.8 kg, demonstrating steady growth appropriate for a British Shorthair female. The Maine Coon kittens, Gogo and Pawpaw, exhibited robust growth rates of 0.6 kg and 0.7 kg respectively, consistent with breed standards. Feeding remained consistent with an average of 4.3 wet food cans per day. A total of 5 incidents were recorded during the month, all classified as MINOR or INFO, with no critical events. Pawpaw's ear scratch on 28 Mar was the most notable incident. Gogo's persistent lethargy was identified as a clinical concern requiring ongoing assessment. Overall, the clinical status of all patients is satisfactory with appropriate developmental progression.</p>
+</div>
+
+<hr>
+
+<!-- MONTHLY KPI -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<line x1="4" y1="20" x2="20" y2="20"/><line x1="6" y1="16" x2="6" y2="20"/>
+<line x1="12" y1="10" x2="12" y2="20"/><line x1="18" y1="6" x2="18" y2="20"/>
+</svg>
+MONTHLY KEY PERFORMANCE INDICATORS
+</h2>
+</div>
+<div class="kpi-grid">
+<div class="kpi-card">
+<div class="kpi-value">133</div>
+<div class="kpi-label">Total Feedings</div>
+<div class="kpi-delta">4.3 / day average</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-value">124</div>
+<div class="kpi-label">Wet Food Cans</div>
+<div class="kpi-delta">Ziwi Peak: 68, Wellness: 56</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-value">5</div>
+<div class="kpi-label">Incidents</div>
+<div class="kpi-delta">0 Critical, 1 Minor, 4 Info</div>
+</div>
+<div class="kpi-card">
+<div class="kpi-value">31</div>
+<div class="kpi-label">Days Recorded</div>
+<div class="kpi-delta">100% completion rate</div>
+</div>
+</div>
+</div>
+
+<hr>
+
+<!-- GROWTH ASSESSMENT -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M2 20L8 14L13 18L22 8"/><path d="M18 8H22V12"/>
+</svg>
+GROWTH ASSESSMENT
+</h2>
+</div>
+
+<h3>Weight Progression — March 2026</h3>
+<table>
+<thead>
+<tr><th>Week</th><th>Banban</th><th>Gogo</th><th>Pawpaw</th></tr>
+</thead>
+<tbody>
+<tr><td>Week 1 (01 Mar)</td><td>3.5 kg</td><td>1.5 kg</td><td>1.6 kg</td></tr>
+<tr><td>Week 2 (08 Mar)</td><td>3.6 kg</td><td>1.7 kg</td><td>1.8 kg</td></tr>
+<tr><td>Week 3 (15 Mar)</td><td>3.7 kg</td><td>1.9 kg</td><td>2.0 kg</td></tr>
+<tr><td>Week 4 (22 Mar)</td><td>3.7 kg</td><td>2.0 kg</td><td>2.15 kg</td></tr>
+<tr><td>Week 5 (29 Mar)</td><td>3.8 kg</td><td>2.1 kg</td><td>2.3 kg</td></tr>
+</tbody>
+</table>
+
+<h3 style="margin-top: 12px;">Growth Rate Visualisation</h3>
+<div style="margin-top: 8px;">
+<div class="growth-bar">
+<span class="growth-label">Banban</span>
+<div class="growth-bar-track">
+<div class="growth-bar-fill" style="width: 43%;"></div>
+</div>
+<span class="growth-value">+0.3 kg (8.6%)</span>
+</div>
+<div class="growth-bar">
+<span class="growth-label">Gogo</span>
+<div class="growth-bar-track">
+<div class="growth-bar-fill" style="width: 86%;"></div>
+</div>
+<span class="growth-value">+0.6 kg (40.0%)</span>
+</div>
+<div class="growth-bar">
+<span class="growth-label">Pawpaw</span>
+<div class="growth-bar-track">
+<div class="growth-bar-fill" style="width: 100%;"></div>
+</div>
+<span class="growth-value">+0.7 kg (43.8%)</span>
+</div>
+</div>
+<div style="font-size: 11px; color: #666; margin-top: 8px;">
+<strong>Assessment:</strong> Both Maine Coon kittens are experiencing rapid growth, consistent with breed standards (Maine Coons typically reach 1.8–2.5 kg by 3 months). Banban's growth rate is appropriate for a British Shorthair female.
+</div>
+</div>
+
+<hr>
+
+<!-- HEALTH OVERVIEW -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M3 12H6L9 7L12 17L15 10L18 14L21 12"/><circle cx="12" cy="12" r="10"/>
+</svg>
+HEALTH OVERVIEW
+</h2>
+</div>
+
+<table>
+<thead>
+<tr><th>Metric</th><th>Banban</th><th>Gogo</th><th>Pawpaw</th></tr>
+</thead>
+<tbody>
+<tr><td>Avg Temperature</td><td>38.4 C</td><td>38.5 C</td><td>38.3 C</td></tr>
+<tr><td>Temperature Range</td><td>38.1–38.6 C</td><td>38.2–38.7 C</td><td>38.0–38.5 C</td></tr>
+<tr><td>Appetite (most common)</td><td>Normal (27/31 days)</td><td>Increased (22/31 days)</td><td>Normal (28/31 days)</td></tr>
+<tr><td>Mood (most common)</td><td>Playful (20/31)</td><td>Lethargic (18/31)</td><td>Calm (16/31)</td></tr>
+<tr><td>Stool Issues</td><td>None</td><td>Soft (2 episodes)</td><td>None</td></tr>
+<tr><td>Vomiting Episodes</td><td>0</td><td>1 (hairball)</td><td>0</td></tr>
+<tr><td>Medications Administered</td><td>None</td><td>None</td><td>None</td></tr>
+</tbody>
+</table>
+
+<div class="warning-box" style="margin-top: 12px;">
+<h3>
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+<path d="M12 2L2 22H22L12 2Z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="1"/>
+</svg>
+Clinical Attention Required
+</h3>
+<p><strong>Gogo</strong> has demonstrated lethargy on 18 out of 31 days (58% of the month). While appetite has remained increased and weight gain is appropriate, the persistent reduction in activity levels warrants a veterinary assessment. Differential diagnoses include: normal growth variation, dietary intolerance, or early-stage systemic condition. Recommend comprehensive examination.</p>
+</div>
+</div>
+
+<hr>
+
+<!-- FEEDING STATISTICS -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<ellipse cx="12" cy="14" rx="8" ry="4"/><path d="M4 14C4 14 4 18 12 18C20 18 20 14 20 14"/>
+</svg>
+FEEDING STATISTICS — MONTHLY CONSOLIDATED
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Patient</th><th>Total Wet Cans</th><th>Total Dry Food</th><th>Avg Daily Wet</th><th>Avg Daily Dry</th><th>Est. Monthly Cost</th></tr>
+</thead>
+<tbody>
+<tr><td>Banban</td><td>38 cans</td><td>465 g</td><td>1.23 cans</td><td>15 g</td><td>$42.00</td></tr>
+<tr><td>Gogo</td><td>44 cans</td><td>372 g</td><td>1.42 cans</td><td>12 g</td><td>$48.50</td></tr>
+<tr><td>Pawpaw</td><td>42 cans</td><td>403 g</td><td>1.35 cans</td><td>13 g</td><td>$46.00</td></tr>
+<tr style="font-weight: 700; border-top: 2px solid #333;">
+<td>Total</td><td>124 cans</td><td>1,240 g</td><td>4.0 cans</td><td>40 g</td><td>$136.50</td></tr>
+</tbody>
+</table>
+<div style="font-size: 11px; color: #666; margin-top: 6px;">
+<strong>Brand Preference:</strong> Ziwi Peak (68 cans, 54.8%) ranked higher than Wellness (56 cans, 45.2%). Banban shows clear preference for Ziwi Peak. Gogo and Pawpaw accept both brands equally.
+</div>
+</div>
+
+<hr>
+
+<!-- BEHAVIORAL ASSESSMENT -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<circle cx="15" cy="6" r="2"/><path d="M9 22L11 16L8 14L10 8L13 11L16 10L18 14"/>
+</svg>
+BEHAVIORAL ASSESSMENT
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Patient</th><th>Dominant Mood</th><th>Activity Level</th><th>Socialisation</th><th>Enrichment Response</th></tr>
+</thead>
+<tbody>
+<tr><td>Banban</td><td>Playful (64%)</td><td>High</td><td>Seeks human interaction</td><td>Excellent — engages with all toys</td></tr>
+<tr><td>Gogo</td><td>Lethargic (58%)</td><td>Low</td><td>Withdrawn, prefers solitude</td><td>Minimal — brief interest in wand toys</td></tr>
+<tr><td>Pawpaw</td><td>Calm (52%)</td><td>Moderate</td><td>Social, interacts with both littermates</td><td>Good — enjoys exploration and tracking</td></tr>
+</tbody>
+</table>
+<div style="font-size: 11px; color: #666; margin-top: 6px;">
+<strong>Assessment:</strong> Banban and Pawpaw display age-appropriate social and exploratory behaviours. Gogo's withdrawal and lethargy is the primary behavioural concern for the month.
+</div>
+</div>
+
+<hr>
+
+<!-- INCIDENT LOG -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M12 2L2 22H22L12 2Z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="1"/>
+</svg>
+INCIDENT LOG — MARCH 2026
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Date</th><th>Patient</th><th>Severity</th><th>Description</th><th>Outcome</th></tr>
+</thead>
+<tbody>
+<tr><td>03 Mar</td><td>Banban</td><td><span class="badge badge-info">INFO</span></td><td>Slight reduction in water intake observed</td><td>Resolved — increased wet food moisture</td></tr>
+<tr><td>10 Mar</td><td>Gogo</td><td><span class="badge badge-info">INFO</span></td><td>Soft stool noted after brand transition</td><td>Resolved — gradual transition protocol</td></tr>
+<tr><td>17 Mar</td><td>Gogo</td><td><span class="badge badge-info">INFO</span></td><td>Hairball vomiting episode</td><td>Resolved — hairball paste administered</td></tr>
+<tr><td>22 Mar</td><td>Gogo</td><td><span class="badge badge-info">INFO</span></td><td>Mild sneezing, 3 episodes</td><td>Resolved — self-limiting</td></tr>
+<tr><td>25 Mar</td><td>Banban</td><td><span class="badge badge-info">INFO</span></td><td>Refused Wellness breakfast</td><td>Resolved — preference noted</td></tr>
+<tr><td>28 Mar</td><td>Pawpaw</td><td><span class="badge badge-warn">MINOR</span></td><td>Scratch to left ear pinna</td><td>Resolved — antiseptic treatment</td></tr>
+</tbody>
+</table>
+<div style="font-size: 11px; color: #666; margin-top: 6px;">
+<strong>Analysis:</strong> 6 total incidents. 5 classified as INFO (83.3%), 1 as MINOR (16.7%). No MODERATE or CRITICAL incidents. All incidents resolved. Gogo was involved in 3 of 6 incidents (50%).
+</div>
+</div>
+
+<hr>
+
+<!-- COMPARATIVE ANALYSIS -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+<path d="M12 6V12L16 14"/>
+</svg>
+COMPARATIVE ANALYSIS — FEBRUARY vs MARCH 2026
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Metric</th><th>February</th><th>March</th><th>Change</th></tr>
+</thead>
+<tbody>
+<tr><td>Total Feedings</td><td>112</td><td>133</td><td>+21 (+18.8%)</td></tr>
+<tr><td>Wet Food Cans</td><td>98</td><td>124</td><td>+26 (+26.5%)</td></tr>
+<tr><td>Dry Food (grams)</td><td>1,050 g</td><td>1,240 g</td><td>+190 g (+18.1%)</td></tr>
+<tr><td>Incidents</td><td>4</td><td>6</td><td>+2</td></tr>
+<tr><td>Banban Weight</td><td>3.2 kg</td><td>3.8 kg</td><td>+0.6 kg</td></tr>
+<tr><td>Gogo Weight</td><td>1.1 kg</td><td>2.1 kg</td><td>+1.0 kg</td></tr>
+<tr><td>Pawpaw Weight</td><td>1.2 kg</td><td>2.3 kg</td><td>+1.1 kg</td></tr>
+<tr><td>Litter Changes</td><td>25</td><td>31</td><td>+6</td></tr>
+</tbody>
+</table>
+<div style="font-size: 11px; color: #666; margin-top: 6px;">
+<strong>Analysis:</strong> Month-over-month growth is consistent with developmental expectations. The increase in feeding volume correlates with the kittens' growth. Incident rate remains low and within acceptable parameters.
+</div>
+</div>
+
+<hr>
+
+<!-- LONG-TERM RECOMMENDATIONS -->
+<div class="rec-box">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M12 2L15 9H22L16 14L18 22L12 17L6 22L8 14L2 9H9L12 2Z"/>
+</svg>
+LONG-TERM CLINICAL RECOMMENDATIONS
+</h2>
+<ol>
+<li><strong>Veterinary Consultation — Gogo:</strong> Schedule a comprehensive health assessment for Gogo within the first week of April. Persistent lethargy (58% of days) warrants investigation. Recommended: physical examination, basic haematology and biochemistry panel.</li>
+<li><strong>Dietary Plan:</strong> Maintain current feeding regimen with gradual brand rotation. Consider introducing a third protein source (e.g., turkey-based formula) to expand dietary variety. Target: 4.5 cans/day total across all patients as kittens grow.</li>
+<li><strong>Vaccination Schedule:</strong> Verify vaccination status. Gogo and Pawpaw (born 02 Jan 2026) should be scheduled for their second round of FVRCP vaccinations at 16 weeks of age (late April).</li>
+<li><strong>Environmental Enrichment:</strong> Implement a structured enrichment programme for Gogo, including: 2 x 10-minute interactive play sessions daily, vertical climbing structures, and puzzle feeders to encourage activity.</li>
+<li><strong>Weight Monitoring:</strong> Continue weekly weight measurements. Expected growth rates: Banban 0.1–0.2 kg/month, Gogo and Pawpaw 0.5–0.8 kg/month (Maine Coon growth curve).</li>
+<li><strong>Supply Planning:</strong> Based on March consumption (124 cans), maintain a minimum 2-week inventory of 62 cans. Monthly budget estimate: $140–$160 for wet food, $25 for dry food, $30 for litter.</li>
+<li><strong>Dental Health:</strong> Begin introducing dental hygiene routine for all patients. Start with dental treats and gradually introduce toothbrushing (finger brush) 2–3 times per week.</li>
+<li><strong>Microchipping:</strong> Confirm microchipping status for Gogo and Pawpaw. If not yet performed, schedule at the next veterinary visit.</li>
+</ol>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+<div>Generated by PetCare CMS Clinical Report System</div>
+<div>Report generated: 31 Mar 2026, 22:00 UTC</div>
+<div>Period: March 2026 (01 Mar — 31 Mar)</div>
+<div>Model: deepseek/deepseek-v4-flash</div>
+<div>Attending: Dr. Sarah Chen</div>
+</div>
+
+</div>
+</body>
+</html>

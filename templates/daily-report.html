@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Clinical Report — PetCare CMS</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+font-family: Arial, Helvetica, sans-serif;
+background: #F5F5F5; padding: 40px;
+display: flex; flex-direction: column; align-items: center;
+}
+#clinical-report {
+max-width: 210mm; width: 100%;
+margin: 0 auto; background: #FFFFFF;
+padding: 30px; box-shadow: 0 2px 16px rgba(0,0,0,0.1);
+}
+@media print {
+body { background: #FFF; padding: 0; }
+#clinical-report { box-shadow: none; padding: 20px; }
+}
+h1 { font-size: 20px; font-weight: 700; color: #000; margin: 5px 0; }
+h2 { font-size: 14px; font-weight: 700; color: #000; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; }
+h3 { font-size: 12px; font-weight: 700; color: #333; margin: 0 0 6px 0; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 15px; }
+th { padding: 8px; text-align: left; font-weight: 700; color: #000; background: #F5F5F5; border-bottom: 2px solid #333; }
+td { padding: 6px 8px; color: #333; border-bottom: 1px solid #DDD; }
+tr:nth-child(even) td { background: #F9F9F9; }
+.header { border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
+.header-row { display: flex; align-items: center; gap: 12px; }
+.header-meta { font-size: 12px; color: #666; margin-top: 4px; }
+.patient-roster { border: 1px solid #333; padding: 12px; margin-bottom: 20px; }
+.exec-summary { border-left: 3px solid #333; padding-left: 12px; margin-bottom: 20px; }
+.exec-summary p { font-size: 12px; color: #333; line-height: 1.6; margin: 0; }
+.section { margin-bottom: 20px; }
+.section-head { border-bottom: 1px solid #999; padding-bottom: 4px; margin-bottom: 10px; }
+.rec-box { background: #F9F9F9; border: 1px solid #333; padding: 12px; margin-bottom: 20px; }
+.rec-box ol { font-size: 12px; color: #333; line-height: 1.8; margin: 0; padding-left: 20px; }
+.footer { border-top: 1px solid #999; padding-top: 10px; margin-top: 20px; font-size: 10px; color: #999; }
+.badge { display: inline-block; padding: 2px 6px; font-size: 10px; font-weight: 700; border: 1px solid #333; margin-right: 4px; }
+.badge-info { border-color: #999; color: #666; }
+.badge-warn { border-color: #000; background: #000; color: #FFF; }
+hr { border: none; border-top: 1px solid #DDD; margin: 15px 0; }
+</style>
+</head>
+<body>
+<div id="clinical-report">
+
+<!-- HEADER -->
+<div class="header">
+<div class="header-row">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M12 2L12 22M2 12L22 12"/><circle cx="12" cy="12" r="10"/>
+</svg>
+<div>
+<h1>DAILY CLINICAL REPORT</h1>
+<div class="header-meta">
+<span>Report ID: PC-20260328-A7F2</span>  | 
+<span>Date: 28 Mar 2026</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- PATIENT ROSTER -->
+<div class="patient-roster">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<circle cx="7" cy="10" r="2"/><circle cx="17" cy="10" r="2"/>
+<path d="M4 16C4 16 6 20 12 20C18 20 20 16 20 16"/>
+</svg>
+PATIENT ROSTER
+</h2>
+<table>
+<thead>
+<tr>
+<th>Patient</th><th>Breed</th><th>Sex</th><th>DOB</th><th>Age</th><th>Weight</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Banban (餅餅)</td><td>British Shorthair</td><td>F</td><td>11 Aug 2025</td><td>7 months</td><td>3.8 kg</td></tr>
+<tr><td>Gogo (糕糕)</td><td>Maine Coon</td><td>M</td><td>02 Jan 2026</td><td>3 months</td><td>2.1 kg</td></tr>
+<tr><td>Pawpaw (包包)</td><td>Maine Coon</td><td>M</td><td>02 Jan 2026</td><td>3 months</td><td>2.3 kg</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- EXECUTIVE SUMMARY -->
+<div class="exec-summary">
+<h2>EXECUTIVE SUMMARY</h2>
+<p>All three patients were assessed on 28 March 2026. Feeding was administered five times throughout the day, comprising four wet food portions (Ziwi Peak and Wellness brands) and three dry food portions via the automatic feeder. Banban exhibited normal appetite and playful behaviour. Gogo presented with lethargy and increased appetite, which warrants continued observation. Pawpaw sustained a minor scratch to the left ear, which was promptly treated and resolved with no further complications. Litter box maintenance was performed once. Overall, the patients' clinical status is stable with no critical findings.</p>
+</div>
+
+<hr>
+
+<!-- FEEDING RECORD -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<ellipse cx="12" cy="14" rx="8" ry="4"/><path d="M4 14C4 14 4 18 12 18C20 18 20 14 20 14"/>
+</svg>
+FEEDING RECORD
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Time</th><th>Patient</th><th>Type</th><th>Brand</th><th>Quantity</th><th>Source</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>08:30</td><td>Banban</td><td>Wet</td><td>Ziwi Peak</td><td>1 can (85g)</td><td>Manual</td><td>Consumed fully</td></tr>
+<tr><td>08:30</td><td>Gogo</td><td>Wet</td><td>Wellness</td><td>1 can (85g)</td><td>Manual</td><td>Consumed 80%</td></tr>
+<tr><td>08:30</td><td>Pawpaw</td><td>Wet</td><td>Wellness</td><td>1 can (85g)</td><td>Manual</td><td>Consumed fully</td></tr>
+<tr><td>12:30</td><td>Banban</td><td>Dry</td><td>Royal Canin</td><td>15 g</td><td>Auto Feeder</td><td>—</td></tr>
+<tr><td>12:30</td><td>Gogo</td><td>Wet</td><td>Ziwi Peak</td><td>0.5 can (shared)</td><td>Manual</td><td>Shared with Pawpaw</td></tr>
+<tr><td>12:30</td><td>Pawpaw</td><td>Wet</td><td>Ziwi Peak</td><td>0.5 can (shared)</td><td>Manual</td><td>Shared with Gogo</td></tr>
+<tr><td>18:00</td><td>Banban</td><td>Dry</td><td>Royal Canin</td><td>12 g</td><td>Auto Feeder</td><td>—</td></tr>
+<tr><td>18:00</td><td>Gogo</td><td>Dry</td><td>Royal Canin</td><td>12 g</td><td>Auto Feeder</td><td>—</td></tr>
+<tr><td>18:00</td><td>Pawpaw</td><td>Dry</td><td>Royal Canin</td><td>12 g</td><td>Auto Feeder</td><td>—</td></tr>
+</tbody>
+</table>
+<div style="font-size: 11px; color: #666;">
+<strong>Assessment:</strong> Total wet food consumption: 4 cans. Dry food consumption: 39 g across all patients. Hydration status appears adequate.
+</div>
+</div>
+
+<hr>
+
+<!-- HEALTH OBSERVATIONS -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M3 12H6L9 7L12 17L15 10L18 14L21 12"/><circle cx="12" cy="12" r="10"/>
+</svg>
+HEALTH OBSERVATIONS
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Patient</th><th>Weight</th><th>Temp</th><th>Appetite</th><th>Mood</th><th>Stool</th><th>Vomit</th><th>Medication</th></tr>
+</thead>
+<tbody>
+<tr><td>Banban</td><td>3.8 kg</td><td>38.4 C</td><td>Normal</td><td>Playful</td><td>Normal formed</td><td>No</td><td>None</td></tr>
+<tr><td>Gogo</td><td>2.1 kg</td><td>38.5 C</td><td>Increased</td><td>Lethargic</td><td>Normal formed</td><td>No</td><td>None</td></tr>
+<tr><td>Pawpaw</td><td>2.3 kg</td><td>38.3 C</td><td>Normal</td><td>Calm</td><td>Normal formed</td><td>No</td><td>None</td></tr>
+</tbody>
+</table>
+<div style="font-size: 11px; color: #666; margin-top: 6px;">
+<strong>Notes:</strong> Gogo's lethargy and increased appetite were noted. No vomiting or diarrhoea observed. All temperatures within normal range (38.0–39.0 C).
+</div>
+</div>
+
+<hr>
+
+<!-- ACTIVITY LOG -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<circle cx="15" cy="6" r="2"/><path d="M9 22L11 16L8 14L10 8L13 11L16 10L18 14"/>
+</svg>
+ACTIVITY LOG
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Patient</th><th>Activity</th><th>Duration</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Banban</td><td>Play</td><td>20 min</td><td>Chasing feather toy, high energy</td></tr>
+<tr><td>Banban</td><td>Sleep</td><td>4 h</td><td>Morning nap on windowsill</td></tr>
+<tr><td>Gogo</td><td>Sleep</td><td>6 h</td><td>Extended sleep, minimal movement</td></tr>
+<tr><td>Gogo</td><td>Grooming</td><td>5 min</td><td>Brief self-grooming session</td></tr>
+<tr><td>Pawpaw</td><td>Explore</td><td>15 min</td><td>Investigated new cardboard box</td></tr>
+<tr><td>Pawpaw</td><td>Sleep</td><td>5 h</td><td>Intermittent naps</td></tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+
+<!-- INCIDENT REPORT -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M12 2L2 22H22L12 2Z"/><line x1="12" y1="9" x2="12" y2="14"/><circle cx="12" cy="17" r="1"/>
+</svg>
+INCIDENT REPORT
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Severity</th><th>Patient</th><th>Title</th><th>Description</th><th>Action Taken</th><th>Status</th></tr>
+</thead>
+<tbody>
+<tr><td><span class="badge badge-info">MINOR</span></td><td>Pawpaw</td><td>Scratch — Left Ear</td><td>Minor superficial scratch observed on the inner aspect of the left ear pinna, approximately 0.5 cm in length. No active bleeding.</td><td>Cleaned with chlorhexidine antiseptic solution. Monitored for 30 minutes.</td><td><span class="badge badge-warn">Resolved</span></td></tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+
+<!-- LITTER BOX LOG -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M8 8V6C8 4 9 3 12 3C15 3 16 4 16 6V8"/>
+</svg>
+LITTER BOX LOG
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Box</th><th>Full Change</th><th>Scooped</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Box #1</td><td>Yes</td><td>Yes</td><td>Full litter replacement. New silica crystal litter added.</td></tr>
+<tr><td>Box #2</td><td>No</td><td>Yes</td><td>Routine scooping. No issues noted.</td></tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+
+<!-- SUPPLY MANAGEMENT -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<rect x="6" y="3" width="12" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/>
+</svg>
+SUPPLY MANAGEMENT
+</h2>
+</div>
+<table>
+<thead>
+<tr><th>Supply Type</th><th>Refilled</th><th>Brand</th><th>Quantity</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr><td>Litter</td><td>Yes</td><td>Fresh Step</td><td>4.5 kg bag</td><td>Replenished Box #1</td></tr>
+<tr><td>Wet Food</td><td>No</td><td>—</td><td>8 cans remaining</td><td>Order placed for restock</td></tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+
+<!-- CLINICAL DIARY -->
+<div class="section">
+<div class="section-head">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<rect x="6" y="3" width="12" height="18" rx="2"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/>
+</svg>
+CLINICAL DIARY
+</h2>
+</div>
+<div style="font-size: 12px; color: #333; line-height: 1.8;">
+<p><strong>Banban:</strong> Displayed notably high energy levels throughout the morning session. Engaged enthusiastically with the feather wand toy for approximately 20 minutes, exhibiting pouncing and chasing behaviours consistent with typical juvenile play. Appetite remained robust. No abnormal respiratory or gastrointestinal signs observed.</p>
+<p style="margin-top: 8px;"><strong>Gogo:</strong> Continued to demonstrate reduced activity levels compared to littermate Pawpaw. Extended sleeping periods were noted. Appetite was increased, consuming 80% of wet food portion and seeking additional food. Lethargy in a growing Maine Coon kitten warrants monitoring over the next 48 hours. Hydration and urine output were normal.</p>
+</div>
+</div>
+
+<hr>
+
+<!-- RECOMMENDATIONS -->
+<div class="rec-box">
+<h2>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.5">
+<path d="M12 2L15 9H22L16 14L18 22L12 17L6 22L8 14L2 9H9L12 2Z"/>
+</svg>
+CLINICAL RECOMMENDATIONS
+</h2>
+<ol>
+<li>Monitor Gogo's lethargy and appetite closely. If reduced activity persists beyond 48 hours, consider scheduling a veterinary consultation.</li>
+<li>Continue twice-daily wet food feeding schedule with brand rotation (Ziwi Peak and Wellness) to ensure nutritional variety.</li>
+<li>Pawpaw's ear scratch should be re-examined daily for signs of infection (erythema, discharge, swelling).</li>
+<li>Increase interactive play sessions for Gogo to encourage activity and developmental stimulation.</li>
+<li>Restock wet food supply: order Ziwi Peak (chicken recipe) and Wellness (pate) before current stock depletes.</li>
+</ol>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+<div>Generated by PetCare CMS Clinical Report System</div>
+<div>Report generated: 28 Mar 2026, 22:00 UTC</div>
+<div>Model: deepseek/deepseek-v4-flash</div>
+<div>Attending: Dr. Sarah Chen</div>
+</div>
+
+</div>
+</body>
+</html>
