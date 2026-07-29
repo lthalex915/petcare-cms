@@ -10,3 +10,4 @@ frontend/.env
 dist/
 build/
 coverage/
+start.sh
