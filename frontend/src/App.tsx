@@ -5,6 +5,7 @@ import DailyLogDetailPage from "./pages/DailyLogDetailPage";
 import DailyLogFormPage from "./pages/DailyLogFormPage";
 import DailyLogListPage from "./pages/DailyLogListPage";
 import DashboardPage from "./pages/DashboardPage";
+import DbmsPage from "./pages/DbmsPage";
 import PetDetailPage from "./pages/PetDetailPage";
 import PetListPage from "./pages/PetListPage";
 import ReportDetailPage from "./pages/ReportDetailPage";
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="reports" element={<ReportListPage />} />
         <Route path="reports/:id" element={<ReportDetailPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="dbms" element={<DbmsPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
     </Routes>

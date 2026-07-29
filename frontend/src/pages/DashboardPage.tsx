@@ -72,7 +72,7 @@ export default function DashboardPage() {
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
           <IconPaw size={18} color="#000" />
-          Active Patients ({pets.length})
+          Active Pets ({pets.length})
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
           {pets.map((pet, index) => (

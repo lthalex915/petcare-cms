@@ -1,5 +1,5 @@
 import { Prisma, ReportType } from "@prisma/client";
-import { prisma } from "../prisma.js";
+import { getPrismaFeatures, prisma } from "../prisma.js";
 import { LlmService } from "./llm-service.js";
 
 function getPeriod(type: ReportType, dateInput?: string) {
@@ -52,12 +52,29 @@ export class ReportGeneratorService {
   private llm = new LlmService();
 
   async generate(type: ReportType, generatedById: string, date?: string) {
+    const features = await getPrismaFeatures();
     const { start, end } = getPeriod(type, date);
 
     const logs = await prisma.dailyLog.findMany({
       where: { date: { gte: start, lte: end } },
       include: {
-        feedings: true,
+        feedings: {
+          select: {
+            id: true,
+            dailyLogId: true,
+            petId: true,
+            mealTime: true,
+            foodType: true,
+            wetFoodBrand: true,
+            ...(features.feedingFlavor ? { flavor: true } : {}),
+            wetFoodQty: true,
+            dryFoodGrams: true,
+            isAutoFeeder: true,
+            consumedBy: true,
+            notes: true,
+            createdAt: true
+          }
+        },
         health: true,
         activities: true,
         incidents: true,
@@ -75,7 +92,7 @@ export class ReportGeneratorService {
       periodStart: start,
       periodEnd: end,
       generatedAt: new Date(),
-      patientRoster: pets,
+      petRoster: pets,
       sections: {
         feeding: logs.flatMap((l) => l.feedings),
         health: logs.flatMap((l) => l.health),
@@ -92,6 +109,8 @@ export class ReportGeneratorService {
       }
     };
 
+    const rawDataJson = JSON.parse(JSON.stringify(rawData)) as Prisma.InputJsonValue;
+
     let htmlContent = "";
     try {
       htmlContent = await this.llm.generateReport(rawData);
@@ -106,7 +125,7 @@ export class ReportGeneratorService {
         periodEnd: end,
         title: `${type} Clinical Report (${start.toISOString().slice(0, 10)} - ${end.toISOString().slice(0, 10)})`,
         htmlContent,
-        rawData: rawData as Prisma.InputJsonValue,
+        rawData: rawDataJson,
         generatedById,
         petIds: pets.map((p) => p.id)
       }

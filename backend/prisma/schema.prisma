@@ -97,6 +97,7 @@ model User {
   dailyLogs        DailyLog[]
   reports          Report[]    @relation("ReportAuthor")
   updatedLlmConfig LlmConfig[] @relation("LlmConfigUpdatedBy")
+  autoFeederSettings AutoFeederSetting[]
 }
 
 model Pet {
@@ -145,12 +146,25 @@ model FeedingRecord {
   mealTime     DateTime
   foodType     FoodType
   wetFoodBrand String?
+  flavor       String?
   wetFoodQty   Float?
   dryFoodGrams Float?
   isAutoFeeder Boolean  @default(false)
   consumedBy   String[]
   notes        String?
   createdAt    DateTime @default(now())
+}
+
+model AutoFeederSetting {
+  id          String   @id @default("default")
+  enabled     Boolean  @default(false)
+  foodType    FoodType @default(DRY)
+  foodBrand   String?
+  flavor      String?
+  amountGrams Float?
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+  updatedBy   User?    @relation(fields: [updatedById], references: [id])
 }
 
 model HealthRecord {

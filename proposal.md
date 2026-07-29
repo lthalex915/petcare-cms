@@ -453,6 +453,21 @@ role: 'ADMIN',
 
 Implement all endpoints with proper error handling and validation:
 
+### Authorization (DBMS Access Control)
+```
+ADMIN role has full create/update/delete authority across all persisted data.
+
+Minimum ADMIN CRUD scope:
+- Users
+- Pets
+- Daily logs
+- Daily log sub-resources (feeding, health, activities, incidents, litter-box, supplies, diary)
+- Reports
+- System settings
+
+Implement role checks in backend middleware and enforce them on each write endpoint.
+```
+
 ### Authentication
 ```
 POST /api/auth/login → { username, password } → { token, user }

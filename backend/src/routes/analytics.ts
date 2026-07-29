@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../middleware/auth.js";
-import { prisma } from "../prisma.js";
+import { getPrismaFeatures, prisma } from "../prisma.js";
 
 const router = Router();
 router.use(authenticate);
@@ -24,11 +24,19 @@ router.get("/weight", async (req, res) => {
 });
 
 router.get("/feeding", async (req, res) => {
+  const features = await getPrismaFeatures();
   const start = req.query.start ? new Date(String(req.query.start)) : new Date("1970-01-01");
   const end = req.query.end ? new Date(String(req.query.end)) : new Date("2999-01-01");
 
   const rows = await prisma.feedingRecord.findMany({
-    where: { dailyLog: { date: { gte: start, lte: end } } }
+    where: { dailyLog: { date: { gte: start, lte: end } } },
+    select: {
+      id: true,
+      wetFoodBrand: true,
+      wetFoodQty: true,
+      dryFoodGrams: true,
+      ...(features.feedingFlavor ? { flavor: true } : {})
+    }
   });
 
   const byBrand = rows.reduce<Record<string, { count: number; wetQty: number; dryGrams: number }>>((acc, row) => {

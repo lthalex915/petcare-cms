@@ -6,16 +6,18 @@ import {
   IconClipboard,
   IconReport,
   IconChart,
+  IconDatabase,
   IconSettings,
   IconHospital
 } from "../icons";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: <IconDashboard size={18} /> },
-  { to: "/pets", label: "Patients", icon: <IconPaw size={18} /> },
+  { to: "/pets", label: "Pets", icon: <IconPaw size={18} /> },
   { to: "/daily-logs", label: "Daily Logs", icon: <IconClipboard size={18} /> },
   { to: "/reports", label: "Reports", icon: <IconReport size={18} /> },
   { to: "/analytics", label: "Analytics", icon: <IconChart size={18} /> },
+  { to: "/dbms", label: "DBMS", icon: <IconDatabase size={18} /> },
   { to: "/settings", label: "Settings", icon: <IconSettings size={18} /> }
 ];
 

@@ -2,7 +2,7 @@ import { Router } from "express";
 import { ActivityType, AppetiteLevel, FoodType, Mood, Severity, StoolType, SupplyType } from "@prisma/client";
 import { authenticate, isAdminModeEnabled, requireAdminMode } from "../middleware/auth.js";
 import { HttpError } from "../middleware/errorHandler.js";
-import { prisma } from "../prisma.js";
+import { getPrismaFeatures, type PrismaFeatures, prisma } from "../prisma.js";
 
 const router = Router();
 router.use(authenticate);
@@ -22,12 +22,31 @@ function dayRange(dateString: string) {
   return { start, end };
 }
 
+function feedingRecordSelect(includeFlavor: boolean) {
+  return {
+    id: true,
+    dailyLogId: true,
+    petId: true,
+    mealTime: true,
+    foodType: true,
+    wetFoodBrand: true,
+    ...(includeFlavor ? { flavor: true } : {}),
+    wetFoodQty: true,
+    dryFoodGrams: true,
+    isAutoFeeder: true,
+    consumedBy: true,
+    notes: true,
+    createdAt: true
+  };
+}
+
 async function getLogByDate(dateString: string) {
   const { start, end } = dayRange(dateString);
+  const features = await getPrismaFeatures();
   const log = await prisma.dailyLog.findFirst({
     where: { date: { gte: start, lt: end } },
     include: {
-      feedings: true,
+      feedings: { select: feedingRecordSelect(features.feedingFlavor) },
       health: true,
       activities: true,
       incidents: true,
@@ -130,10 +149,14 @@ const resourceConfig = {
   feedings: {
     delegate: prisma.feedingRecord,
     include: { pet: true },
-    transform: (data: Record<string, unknown>) => ({
-      ...data,
-      mealTime: data.mealTime ? new Date(String(data.mealTime)) : new Date()
-    })
+    transform: (data: Record<string, unknown>, features: PrismaFeatures) => {
+      const { flavor: _ignoredFlavor, ...rest } = data;
+      return {
+        ...rest,
+        ...(features.feedingFlavor ? { flavor: typeof data.flavor === "string" ? data.flavor : null } : {}),
+        mealTime: data.mealTime ? new Date(String(data.mealTime)) : new Date()
+      };
+    }
   },
   health: {
     delegate: prisma.healthRecord,
@@ -211,9 +234,11 @@ router.get("/:date/:resource", async (req, res) => {
 
   const cfg = resourceConfig[resource];
   const delegate = cfg.delegate as any;
+  const features = await getPrismaFeatures();
   const rows = await delegate.findMany({
     where: { dailyLogId: log.id },
-    ...(cfg.include ? { include: cfg.include } : {})
+    ...(resource === "feedings" ? { select: { ...feedingRecordSelect(features.feedingFlavor), pet: true } } : {}),
+    ...(resource !== "feedings" && cfg.include ? { include: cfg.include } : {})
   });
   res.json(rows);
 });
@@ -229,13 +254,24 @@ router.post("/:date/:resource", async (req, res) => {
   const log = await ensureLog(req.params.date, req.user!.userId);
   const input = req.body as Record<string, unknown>;
   validateEnums(resource, input);
+  const features = await getPrismaFeatures();
 
-  const created = await delegate.create({
-    data: {
-      dailyLogId: log.id,
-      ...cfg.transform(input)
-    }
-  });
+  const created = await delegate.create(
+    resource === "feedings"
+      ? {
+          data: {
+            dailyLogId: log.id,
+            ...cfg.transform(input, features)
+          },
+          select: feedingRecordSelect(features.feedingFlavor)
+        }
+      : {
+          data: {
+            dailyLogId: log.id,
+            ...cfg.transform(input, features)
+          }
+        }
+  );
   res.status(201).json(created);
 });
 
@@ -249,11 +285,20 @@ router.put("/:date/:resource/:id", requireAdminMode, async (req, res) => {
   const delegate = cfg.delegate as any;
   const input = req.body as Record<string, unknown>;
   validateEnums(resource, input);
+  const features = await getPrismaFeatures();
 
-  const updated = await delegate.update({
-    where: { id: req.params.id },
-    data: cfg.transform(input)
-  });
+  const updated = await delegate.update(
+    resource === "feedings"
+      ? {
+          where: { id: req.params.id },
+          data: cfg.transform(input, features),
+          select: feedingRecordSelect(features.feedingFlavor)
+        }
+      : {
+          where: { id: req.params.id },
+          data: cfg.transform(input, features)
+        }
+  );
   res.json(updated);
 });
 

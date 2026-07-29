@@ -142,6 +142,16 @@ export function IconChart(props: IconProps) {
   );
 }
 
+export function IconDatabase(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <ellipse cx="12" cy="5" rx="7" ry="3" />
+      <path d="M5 5V12C5 13.7 8.1 15 12 15C15.9 15 19 13.7 19 12V5" />
+      <path d="M5 12V19C5 20.7 8.1 22 12 22C15.9 22 19 20.7 19 19V12" />
+    </IconBase>
+  );
+}
+
 export function IconSettings(props: IconProps) {
   return (
     <IconBase {...props}>

@@ -73,7 +73,7 @@ export default function PetDetailPage() {
   }
 
   if (!pet) {
-    return <div className="page-card">Patient not found.</div>;
+    return <div className="page-card">Pet not found.</div>;
   }
 
   return (

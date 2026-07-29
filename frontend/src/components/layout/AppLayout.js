@@ -1,13 +1,14 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { IconDashboard, IconPaw, IconClipboard, IconReport, IconChart, IconSettings, IconHospital } from "../icons";
+import { IconDashboard, IconPaw, IconClipboard, IconReport, IconChart, IconDatabase, IconSettings, IconHospital } from "../icons";
 const navItems = [
     { to: "/dashboard", label: "Dashboard", icon: _jsx(IconDashboard, { size: 18 }) },
-    { to: "/pets", label: "Patients", icon: _jsx(IconPaw, { size: 18 }) },
+    { to: "/pets", label: "Pets", icon: _jsx(IconPaw, { size: 18 }) },
     { to: "/daily-logs", label: "Daily Logs", icon: _jsx(IconClipboard, { size: 18 }) },
     { to: "/reports", label: "Reports", icon: _jsx(IconReport, { size: 18 }) },
     { to: "/analytics", label: "Analytics", icon: _jsx(IconChart, { size: 18 }) },
+    { to: "/dbms", label: "DBMS", icon: _jsx(IconDatabase, { size: 18 }) },
     { to: "/settings", label: "Settings", icon: _jsx(IconSettings, { size: 18 }) }
 ];
 export default function AppLayout() {

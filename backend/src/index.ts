@@ -10,6 +10,7 @@ import reportsRouter from "./routes/reports.js";
 import analyticsRouter from "./routes/analytics.js";
 import usersRouter from "./routes/users.js";
 import settingsRouter from "./routes/settings.js";
+import dbmsRouter from "./routes/dbms.js";
 import { initializeScheduler } from "./scheduler.js";
 
 const app = express();
@@ -28,6 +29,7 @@ app.use("/api/reports", reportsRouter);
 app.use("/api/analytics", analyticsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/settings", settingsRouter);
+app.use("/api/dbms", dbmsRouter);
 
 app.use(errorHandler);
 

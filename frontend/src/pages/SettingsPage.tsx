@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
-import type { LlmConfig, ProviderType } from "../types";
+import type { AutoFeederSetting, FoodType, LlmConfig, ProviderType } from "../types";
+import { readFrequentFoods, saveFrequentFoods } from "../utils/frequentFoods";
 
 const defaultConfig: LlmConfig = {
   id: "default",
@@ -13,6 +14,39 @@ const defaultConfig: LlmConfig = {
   maxTokens: 4000,
   isActive: true
 };
+
+const defaultAutoFeederSetting: AutoFeederSetting = {
+  id: "default",
+  enabled: false,
+  foodType: "DRY",
+  foodBrand: "",
+  flavor: "",
+  amountGrams: null
+};
+
+function normalizeFrequentFoods(value: string[]): string[] {
+  return Array.from(new Set(value.map((item) => item.trim()).filter(Boolean)));
+}
+
+function normalizeAutoFeederSetting(value: Partial<AutoFeederSetting> | null | undefined): AutoFeederSetting {
+  if (!value) {
+    return defaultAutoFeederSetting;
+  }
+  return {
+    ...defaultAutoFeederSetting,
+    ...value,
+    enabled: Boolean(value.enabled),
+    foodType: value.foodType === "WET" || value.foodType === "DRY" || value.foodType === "BOTH" ? value.foodType : "DRY",
+    foodBrand: typeof value.foodBrand === "string" ? value.foodBrand : "",
+    flavor: typeof value.flavor === "string" ? value.flavor : "",
+    amountGrams:
+      typeof value.amountGrams === "number"
+        ? value.amountGrams
+        : value.amountGrams == null
+          ? null
+          : Number(value.amountGrams)
+  };
+}
 
 function normalizeConfig(value: Partial<LlmConfig> | null | undefined): LlmConfig {
   if (!value) {
@@ -63,11 +97,19 @@ function extractErrorMessage(error: unknown): string {
 
 export default function SettingsPage() {
   const { adminMode, setAdminMode } = useAuth();
+  const [adminModeDraft, setAdminModeDraft] = useState(adminMode);
   const [config, setConfig] = useState<LlmConfig>(defaultConfig);
+  const [autoFeederSetting, setAutoFeederSetting] = useState<AutoFeederSetting>(defaultAutoFeederSetting);
+  const [frequentFoods, setFrequentFoods] = useState<string[]>([]);
+  const [newFrequentFood, setNewFrequentFood] = useState("");
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState("");
+
+  useEffect(() => {
+    setAdminModeDraft(adminMode);
+  }, [adminMode]);
 
   useEffect(() => {
     api.get<LlmConfig | null>("/settings/llm").then((res) => {
@@ -77,7 +119,27 @@ export default function SettingsPage() {
     }).catch(() => {
       setConfig(defaultConfig);
     });
+
+    setFrequentFoods(normalizeFrequentFoods(readFrequentFoods()));
+    api.get<AutoFeederSetting | null>("/settings/auto-feeder").then((res) => {
+      setAutoFeederSetting(normalizeAutoFeederSetting(res.data));
+    }).catch(() => {
+      setAutoFeederSetting(defaultAutoFeederSetting);
+    });
   }, []);
+
+  function addFrequentFood() {
+    const value = newFrequentFood.trim();
+    if (!value) {
+      return;
+    }
+    setFrequentFoods((prev) => normalizeFrequentFoods([...prev, value]));
+    setNewFrequentFood("");
+  }
+
+  function removeFrequentFood(food: string) {
+    setFrequentFoods((prev) => prev.filter((item) => item !== food));
+  }
 
   async function save() {
     setSaving(true);
@@ -88,10 +150,20 @@ export default function SettingsPage() {
         apiKey: config.apiKey.includes("*") ? "" : config.apiKey
       };
       const response = await api.put<LlmConfig>("/settings/llm", payload);
+      await api.put<AutoFeederSetting>("/settings/auto-feeder", {
+        ...autoFeederSetting,
+        amountGrams:
+          autoFeederSetting.amountGrams == null || Number.isNaN(Number(autoFeederSetting.amountGrams))
+            ? null
+            : Number(autoFeederSetting.amountGrams)
+      });
+      const savedFrequentFoods = saveFrequentFoods(normalizeFrequentFoods(frequentFoods));
+      setFrequentFoods(savedFrequentFoods);
+      setAdminMode(adminModeDraft);
       setConfig(normalizeConfig(response.data));
-      setResult("Configuration saved");
+      setResult("All settings saved");
     } catch {
-      setResult("Failed to save configuration");
+      setResult("Failed to save settings");
     } finally {
       setSaving(false);
     }
@@ -126,11 +198,93 @@ export default function SettingsPage() {
         <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
           <input
             type="checkbox"
-            checked={adminMode}
-            onChange={(e) => setAdminMode(e.target.checked)}
+            checked={adminModeDraft}
+            onChange={(e) => {
+              const enabled = e.target.checked;
+              setAdminModeDraft(enabled);
+              setAdminMode(enabled);
+            }}
           />
           Enable admin mode for editing/deleting pets, daily logs, and reports
         </label>
+      </div>
+
+      <div style={{ marginBottom: 16, padding: 12, border: "1px solid #ddd", background: "#fafafa" }}>
+        <div style={{ fontWeight: 700, marginBottom: 8 }}>Auto Feeder (自動餵食器)</div>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", marginBottom: 10 }}>
+          <input
+            type="checkbox"
+            checked={autoFeederSetting.enabled}
+            onChange={(e) => setAutoFeederSetting((prev) => ({ ...prev, enabled: e.target.checked }))}
+          />
+          Food provided by 自動餵食器 is auto-added daily
+        </label>
+
+        <div className="form-grid">
+          <select
+            value={autoFeederSetting.foodType}
+            onChange={(e) => setAutoFeederSetting((prev) => ({ ...prev, foodType: e.target.value as FoodType }))}
+          >
+            <option value="WET">Wet</option>
+            <option value="DRY">Dry</option>
+            <option value="BOTH">Both</option>
+          </select>
+          <input
+            value={autoFeederSetting.foodBrand ?? ""}
+            onChange={(e) => setAutoFeederSetting((prev) => ({ ...prev, foodBrand: e.target.value }))}
+            placeholder="Food brand"
+          />
+          <input
+            value={autoFeederSetting.flavor ?? ""}
+            onChange={(e) => setAutoFeederSetting((prev) => ({ ...prev, flavor: e.target.value }))}
+            placeholder="Flavor (recommended, optional)"
+          />
+          <input
+            value={autoFeederSetting.amountGrams == null ? "" : String(autoFeederSetting.amountGrams)}
+            onChange={(e) => setAutoFeederSetting((prev) => ({ ...prev, amountGrams: e.target.value === "" ? null : Number(e.target.value) }))}
+            type="number"
+            min={0}
+            step={1}
+            placeholder="Amount (grams)"
+          />
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 16, padding: 12, border: "1px solid #ddd", background: "#fafafa" }}>
+        <div style={{ fontWeight: 700, marginBottom: 8 }}>Frequent Foods</div>
+        <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+          <input
+            value={newFrequentFood}
+            onChange={(e) => setNewFrequentFood(e.target.value)}
+            placeholder="Add food or brand"
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                addFrequentFood();
+              }
+            }}
+          />
+          <button type="button" onClick={addFrequentFood} style={{ border: "1px solid #000", background: "#fff", padding: "8px 12px" }}>
+            Add
+          </button>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {frequentFoods.length === 0 ? (
+            <span style={{ color: "#666", fontSize: 12 }}>No frequent foods added yet.</span>
+          ) : (
+            frequentFoods.map((food) => (
+              <button
+                key={food}
+                type="button"
+                onClick={() => removeFrequentFood(food)}
+                style={{ border: "1px solid #ccc", background: "#fff", padding: "4px 8px", fontSize: 12 }}
+                title="Remove"
+              >
+                {food} x
+              </button>
+            ))
+          )}
+        </div>
       </div>
 
       <div className="form-grid" style={{ marginBottom: 12 }}>
@@ -191,7 +345,7 @@ export default function SettingsPage() {
           {testing ? "Testing..." : "Test Connection"}
         </button>
         <button type="button" onClick={save} disabled={saving} style={{ border: "none", background: "#000", color: "#fff", padding: "10px 16px" }}>
-          {saving ? "Saving..." : "Save Configuration"}
+          {saving ? "Saving..." : "Save All Changes"}
         </button>
       </div>
 

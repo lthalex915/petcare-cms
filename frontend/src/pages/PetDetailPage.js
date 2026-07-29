@@ -69,7 +69,7 @@ export default function PetDetailPage() {
         navigate("/pets");
     }
     if (!pet) {
-        return _jsx("div", { className: "page-card", children: "Patient not found." });
+        return _jsx("div", { className: "page-card", children: "Pet not found." });
     }
     return (_jsxs("div", { className: "page-card", children: [_jsxs("h1", { style: { marginTop: 0, fontSize: 20 }, children: [pet.nameEn, " (", pet.nameZh, ")"] }), adminMode && (_jsx("div", { style: { marginBottom: 12, display: "flex", gap: 8 }, children: !editing ? (_jsxs(_Fragment, { children: [_jsx("button", { onClick: () => setEditing(true), style: { border: "1px solid #000", background: "#fff", padding: "8px 12px" }, children: "Edit Pet" }), _jsx("button", { onClick: removePet, style: { border: "1px solid #a31616", background: "#fff", color: "#a31616", padding: "8px 12px" }, children: "Remove Pet" })] })) : (_jsxs(_Fragment, { children: [_jsx("button", { onClick: () => {
                                 setEditing(false);

@@ -41,6 +41,9 @@ export function IconReport(props) {
 export function IconChart(props) {
     return (_jsxs(IconBase, { ...props, children: [_jsx("line", { x1: "4", y1: "20", x2: "20", y2: "20" }), _jsx("line", { x1: "6", y1: "16", x2: "6", y2: "20" }), _jsx("line", { x1: "12", y1: "10", x2: "12", y2: "20" }), _jsx("line", { x1: "18", y1: "6", x2: "18", y2: "20" })] }));
 }
+export function IconDatabase(props) {
+    return (_jsxs(IconBase, { ...props, children: [_jsx("ellipse", { cx: "12", cy: "5", rx: "7", ry: "3" }), _jsx("path", { d: "M5 5V12C5 13.7 8.1 15 12 15C15.9 15 19 13.7 19 12V5" }), _jsx("path", { d: "M5 12V19C5 20.7 8.1 22 12 22C15.9 22 19 20.7 19 19V12" })] }));
+}
 export function IconSettings(props) {
     return (_jsxs(IconBase, { ...props, children: [_jsx("circle", { cx: "12", cy: "12", r: "3" }), _jsx("path", { d: "M12 1V5M12 19V23M5 12H1M23 12H19M4.2 4.2L7 7M17 17L19.8 19.8M4.2 19.8L7 17M17 7L19.8 4.2" })] }));
 }

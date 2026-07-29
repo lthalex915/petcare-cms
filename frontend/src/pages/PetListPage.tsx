@@ -12,7 +12,7 @@ export default function PetListPage() {
 
   return (
     <div className="page-card">
-      <h1 style={{ marginTop: 0, fontSize: 20 }}>Patients</h1>
+      <h1 style={{ marginTop: 0, fontSize: 20 }}>Pets</h1>
       <table className="table">
         <thead>
           <tr>

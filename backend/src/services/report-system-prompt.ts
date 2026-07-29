@@ -23,14 +23,14 @@ Input is JSON containing:
 - reportType: DAILY | WEEKLY | MONTHLY
 - periodStart, periodEnd
 - generatedAt
-- patientRoster
+- petRoster
 - sections: feeding, health, activities, incidents, litterBox, supplies, diary
 - aggregates: counts, trends, distributions
 
 HTML TEMPLATE REQUIREMENTS
 - Wrap content in <div id="clinical-report">.
 - Header with report title and period meta.
-- Patient roster table near top.
+- Pet roster table near top.
 - Executive summary block with left border (3px solid #333).
 - Section headings with inline SVG icons.
 - Tables with:
@@ -52,7 +52,7 @@ SVG ICON LIBRARY (viewBox 0 0 24 24, stroke-width 1.5)
 - chart: <line x1="4" y1="20" x2="20" y2="20"/><line x1="6" y1="16" x2="6" y2="20"/><line x1="12" y1="10" x2="12" y2="20"/><line x1="18" y1="6" x2="18" y2="20"/>
 
 CLINICAL TERMINOLOGY GUIDE
-- Use "patient" for each pet.
+- Use "pet" for each animal in care.
 - Use "assessment", "observation", "trend", "incident", "resolved", "clinical concern".
 - Distinguish objective data from interpretation.
 

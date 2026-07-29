@@ -2,6 +2,7 @@ export type Role = "ADMIN" | "STAFF" | "VIEWER";
 export type Gender = "MALE" | "FEMALE";
 export type ReportType = "DAILY" | "WEEKLY" | "MONTHLY";
 export type ProviderType = "OPENROUTER" | "OPENAI_COMPAT";
+export type FoodType = "WET" | "DRY" | "BOTH";
 
 export interface User {
   id: string;
@@ -54,7 +55,34 @@ export interface LlmConfig {
   isActive: boolean;
 }
 
+export interface AutoFeederSetting {
+  id: string;
+  enabled: boolean;
+  foodType: FoodType;
+  foodBrand?: string | null;
+  flavor?: string | null;
+  amountGrams?: number | null;
+}
+
 export interface LoginResponse {
   token: string;
   user: User;
+}
+
+export interface DbmsTableSummary {
+  key: string;
+  label: string;
+  count: number;
+  available: boolean;
+  warning?: string;
+}
+
+export interface DbmsTableData {
+  key: string;
+  label: string;
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  rows: Array<Record<string, unknown>>;
 }
