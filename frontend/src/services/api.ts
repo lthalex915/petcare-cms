@@ -9,6 +9,8 @@ api.interceptors.request.use((request) => {
   if (token) {
     request.headers.Authorization = `Bearer ${token}`;
   }
+  const adminMode = localStorage.getItem("petcare_admin_mode") === "true";
+  request.headers["x-admin-mode"] = String(adminMode);
   return request;
 });
 

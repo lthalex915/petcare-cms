@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ActivityType, AppetiteLevel, FoodType, Mood, Severity, StoolType, SupplyType } from "@prisma/client";
-import { authenticate } from "../middleware/auth.js";
+import { authenticate, isAdminModeEnabled, requireAdminMode } from "../middleware/auth.js";
 import { HttpError } from "../middleware/errorHandler.js";
 import { prisma } from "../prisma.js";
 
@@ -106,6 +106,10 @@ router.post("/", async (req, res) => {
 
   const targetDate = parseDateOnly(date);
   const existing = await prisma.dailyLog.findUnique({ where: { date: targetDate } });
+  if (existing && !isAdminModeEnabled(req)) {
+    return res.json(existing);
+  }
+
   const log = existing
     ? await prisma.dailyLog.update({ where: { id: existing.id }, data: { summary } })
     : await prisma.dailyLog.create({ data: { date: targetDate, summary, createdById: req.user!.userId } });
@@ -113,7 +117,7 @@ router.post("/", async (req, res) => {
   res.json(log);
 });
 
-router.delete("/:date", async (req, res) => {
+router.delete("/:date", requireAdminMode, async (req, res) => {
   const log = await getLogByDate(req.params.date);
   if (!log) {
     throw new HttpError(404, "Daily log not found");
@@ -206,7 +210,8 @@ router.get("/:date/:resource", async (req, res) => {
   }
 
   const cfg = resourceConfig[resource];
-  const rows = await cfg.delegate.findMany({
+  const delegate = cfg.delegate as any;
+  const rows = await delegate.findMany({
     where: { dailyLogId: log.id },
     ...(cfg.include ? { include: cfg.include } : {})
   });
@@ -220,11 +225,12 @@ router.post("/:date/:resource", async (req, res) => {
   }
 
   const cfg = resourceConfig[resource];
+  const delegate = cfg.delegate as any;
   const log = await ensureLog(req.params.date, req.user!.userId);
   const input = req.body as Record<string, unknown>;
   validateEnums(resource, input);
 
-  const created = await cfg.delegate.create({
+  const created = await delegate.create({
     data: {
       dailyLogId: log.id,
       ...cfg.transform(input)
@@ -233,31 +239,33 @@ router.post("/:date/:resource", async (req, res) => {
   res.status(201).json(created);
 });
 
-router.put("/:date/:resource/:id", async (req, res) => {
+router.put("/:date/:resource/:id", requireAdminMode, async (req, res) => {
   const resource = req.params.resource as ResourceKey;
   if (!(resource in resourceConfig)) {
     throw new HttpError(404, "Resource not found");
   }
 
   const cfg = resourceConfig[resource];
+  const delegate = cfg.delegate as any;
   const input = req.body as Record<string, unknown>;
   validateEnums(resource, input);
 
-  const updated = await cfg.delegate.update({
+  const updated = await delegate.update({
     where: { id: req.params.id },
     data: cfg.transform(input)
   });
   res.json(updated);
 });
 
-router.delete("/:date/:resource/:id", async (req, res) => {
+router.delete("/:date/:resource/:id", requireAdminMode, async (req, res) => {
   const resource = req.params.resource as ResourceKey;
   if (!(resource in resourceConfig)) {
     throw new HttpError(404, "Resource not found");
   }
 
   const cfg = resourceConfig[resource];
-  await cfg.delegate.delete({ where: { id: req.params.id } });
+  const delegate = cfg.delegate as any;
+  await delegate.delete({ where: { id: req.params.id } });
   res.json({ success: true });
 });
 

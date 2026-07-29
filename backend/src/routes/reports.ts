@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { ReportType } from "@prisma/client";
-import { authenticate } from "../middleware/auth.js";
+import { authenticate, requireAdminMode } from "../middleware/auth.js";
 import { HttpError } from "../middleware/errorHandler.js";
 import { prisma } from "../prisma.js";
 import { ReportGeneratorService } from "../services/report-generator.js";
@@ -50,7 +50,19 @@ router.post("/generate", async (req, res) => {
   res.status(201).json(report);
 });
 
-router.delete("/:id", async (req, res) => {
+router.put("/:id", requireAdminMode, async (req, res) => {
+  const { title, htmlContent } = req.body as { title?: string; htmlContent?: string };
+  const report = await prisma.report.update({
+    where: { id: req.params.id },
+    data: {
+      ...(typeof title === "string" ? { title } : {}),
+      ...(typeof htmlContent === "string" ? { htmlContent } : {})
+    }
+  });
+  res.json(report);
+});
+
+router.delete("/:id", requireAdminMode, async (req, res) => {
   await prisma.report.delete({ where: { id: req.params.id } });
   res.json({ success: true });
 });

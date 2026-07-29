@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
 import type { LlmConfig, ProviderType } from "../types";
 
@@ -61,6 +62,7 @@ function extractErrorMessage(error: unknown): string {
 }
 
 export default function SettingsPage() {
+  const { adminMode, setAdminMode } = useAuth();
   const [config, setConfig] = useState<LlmConfig>(defaultConfig);
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -118,6 +120,18 @@ export default function SettingsPage() {
   return (
     <div className="page-card">
       <h1 style={{ marginTop: 0, fontSize: 20 }}>LLM API Configuration</h1>
+
+      <div style={{ marginBottom: 16, padding: 12, border: "1px solid #ddd", background: "#fafafa" }}>
+        <div style={{ fontWeight: 700, marginBottom: 8 }}>Admin Mode</div>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={adminMode}
+            onChange={(e) => setAdminMode(e.target.checked)}
+          />
+          Enable admin mode for editing/deleting pets, daily logs, and reports
+        </label>
+      </div>
 
       <div className="form-grid" style={{ marginBottom: 12 }}>
         <select

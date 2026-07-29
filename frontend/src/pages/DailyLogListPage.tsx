@@ -1,14 +1,26 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
 import type { DailyLog } from "../types";
 
 export default function DailyLogListPage() {
+  const { adminMode } = useAuth();
   const [logs, setLogs] = useState<DailyLog[]>([]);
 
+  async function loadLogs() {
+    const response = await api.get<DailyLog[]>("/daily-logs");
+    setLogs(response.data);
+  }
+
   useEffect(() => {
-    api.get<DailyLog[]>("/daily-logs").then((res) => setLogs(res.data)).catch(() => setLogs([]));
+    loadLogs().catch(() => setLogs([]));
   }, []);
+
+  async function removeLog(date: string) {
+    await api.delete(`/daily-logs/${date}`);
+    await loadLogs();
+  }
 
   return (
     <div className="page-card">
@@ -33,7 +45,17 @@ export default function DailyLogListPage() {
                 <td>{date}</td>
                 <td>{log.summary || "No summary"}</td>
                 <td>{new Date(log.updatedAt).toLocaleString()}</td>
-                <td><Link to={`/daily-logs/${date}`}>View</Link></td>
+                <td style={{ display: "flex", gap: 8 }}>
+                  <Link to={`/daily-logs/${date}`}>View</Link>
+                  {adminMode && (
+                    <button
+                      onClick={() => removeLog(date)}
+                      style={{ border: "1px solid #a31616", background: "#fff", color: "#a31616", padding: "2px 8px" }}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </td>
               </tr>
             );
           })}

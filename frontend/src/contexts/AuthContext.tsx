@@ -5,9 +5,11 @@ import api from "../services/api";
 interface AuthContextValue {
   user: User | null;
   token: string | null;
+  adminMode: boolean;
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  setAdminMode: (enabled: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -15,6 +17,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [adminMode, setAdminModeState] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,8 +27,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
     }
+    setAdminModeState(localStorage.getItem("petcare_admin_mode") === "true");
     setLoading(false);
   }, []);
+
+  function setAdminMode(enabled: boolean) {
+    setAdminModeState(enabled);
+    localStorage.setItem("petcare_admin_mode", String(enabled));
+  }
 
   async function login(username: string, password: string) {
     const response = await api.post<LoginResponse>("/auth/login", { username, password });
@@ -43,14 +52,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       localStorage.removeItem("petcare_token");
       localStorage.removeItem("petcare_user");
+      localStorage.removeItem("petcare_admin_mode");
       setToken(null);
       setUser(null);
+      setAdminModeState(false);
     }
   }
 
   const value = useMemo(
-    () => ({ user, token, loading, login, logout }),
-    [user, token, loading]
+    () => ({ user, token, adminMode, loading, login, logout, setAdminMode }),
+    [user, token, adminMode, loading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

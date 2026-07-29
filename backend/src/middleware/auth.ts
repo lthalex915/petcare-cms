@@ -77,3 +77,14 @@ export function requireRole(roles: Role[]) {
     next();
   };
 }
+
+export function requireAdminMode(req: Request, _res: Response, next: NextFunction) {
+  if (!isAdminModeEnabled(req)) {
+    throw new HttpError(403, "Admin mode is required for this action");
+  }
+  next();
+}
+
+export function isAdminModeEnabled(req: Request): boolean {
+  return String(req.header("x-admin-mode") ?? "").toLowerCase() === "true";
+}
