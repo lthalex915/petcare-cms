@@ -150,7 +150,12 @@ const resourceConfig = {
     delegate: prisma.feedingRecord,
     include: { pet: true },
       transform: (data: Record<string, unknown>, features: PrismaFeatures) => {
-        const { flavor: _ignoredFlavor, ...rest } = data;
+        const {
+          flavor: _ignoredFlavor,
+          foodGrams: _ignoredFoodGrams,
+          dryFoodGrams: _ignoredDryFoodGrams,
+          ...rest
+        } = data;
 
         const normalizedGrams =
           typeof data.foodGrams === "number"
