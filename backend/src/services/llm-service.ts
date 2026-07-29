@@ -13,6 +13,21 @@ type ConfigInput = {
   updatedById?: string;
 };
 
+type ChatMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
+};
+
+type LlmCallOptions = {
+  pingMode?: boolean;
+  messages?: ChatMessage[];
+};
+
+type LlmCallResult = {
+  content: string;
+  finishReason: string;
+};
+
 function isMaskedApiKey(value: string | null | undefined): boolean {
   return typeof value === "string" && value.includes("*");
 }
@@ -46,6 +61,27 @@ function extractTextFromMessageContent(content: unknown): string {
   }
 
   return parts.join("\n").trim();
+}
+
+function hasClosingHtmlTag(html: string): boolean {
+  return html.trimEnd().toLowerCase().endsWith("</html>");
+}
+
+function sanitizeTemperature(value: unknown): number {
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(parsed)) {
+    return 0.3;
+  }
+  return Math.max(0, Math.min(2, parsed));
+}
+
+function sanitizeMaxTokens(value: unknown): number {
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(parsed)) {
+    return 12000;
+  }
+  const rounded = Math.floor(parsed);
+  return Math.max(512, Math.min(16000, rounded));
 }
 
 export class LlmService {
@@ -121,15 +157,73 @@ export class LlmService {
       throw new Error("LLM API key is not configured");
     }
 
-    return this.callLlm(mergedConfig, aggregatedData);
+    const initialMessages: ChatMessage[] = [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: JSON.stringify(aggregatedData) }
+    ];
+
+    const reportConfig: LlmConfig = {
+      ...mergedConfig,
+      maxTokens: Math.max(12000, sanitizeMaxTokens(mergedConfig.maxTokens))
+    };
+
+    const attemptsLimit = 4;
+    const chunks: string[] = [];
+    const messages = [...initialMessages];
+
+    for (let attempt = 1; attempt <= attemptsLimit; attempt += 1) {
+      const result = await this.callLlmWithMetadata(reportConfig, undefined, undefined, {
+        messages
+      });
+
+      chunks.push(result.content);
+      const combined = chunks.join("").trim();
+      const complete = hasClosingHtmlTag(combined);
+
+      console.log("[LlmService] Report generation chunk", {
+        attempt,
+        finishReason: result.finishReason,
+        chunkLength: result.content.length,
+        combinedLength: combined.length,
+        complete
+      });
+
+      if (complete) {
+        return combined;
+      }
+
+      if (result.finishReason !== "length") {
+        throw new Error(`LLM returned incomplete report (finish_reason: ${result.finishReason})`);
+      }
+
+      messages.push(
+        { role: "assistant", content: result.content },
+        {
+          role: "user",
+          content: "Continue exactly from where you stopped. Do not repeat previous content. Return only the remaining HTML so the final full output ends with </html>."
+        }
+      );
+    }
+
+    throw new Error("LLM report generation exceeded continuation limit before closing </html> tag");
   }
 
   private async callLlm(
     currentConfig: LlmConfig,
     request: unknown,
     modelOverride?: string,
-    options?: { pingMode?: boolean }
+    options?: LlmCallOptions
   ): Promise<string> {
+    const result = await this.callLlmWithMetadata(currentConfig, request, modelOverride, options);
+    return result.content;
+  }
+
+  private async callLlmWithMetadata(
+    currentConfig: LlmConfig,
+    request: unknown,
+    modelOverride?: string,
+    options?: LlmCallOptions
+  ): Promise<LlmCallResult> {
     const endpoint = `${normalizeApiBaseUrl(currentConfig.apiBaseUrl)}/chat/completions`;
     const model = (modelOverride ?? currentConfig.defaultModel).trim().replace(/^~/, "");
     if (!model) {
@@ -146,24 +240,47 @@ export class LlmService {
       headers["X-OpenRouter-Title"] = config.appTitle;
     }
 
-    const messages = options?.pingMode
-      ? [{ role: "user", content: "Reply with exactly: OK" }]
-      : [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: JSON.stringify(request) }
-        ];
+    const messages: ChatMessage[] = options?.messages
+      ? options.messages
+      : options?.pingMode
+        ? [{ role: "user", content: "Reply with exactly: OK" }]
+        : [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: JSON.stringify(request) }
+          ];
+
+    const effectiveTemperature = options?.pingMode ? 0 : sanitizeTemperature(currentConfig.temperature);
+    const effectiveMaxTokens = options?.pingMode ? 512 : sanitizeMaxTokens(currentConfig.maxTokens);
 
     const payload = {
       model,
       messages,
-      temperature: options?.pingMode ? 0 : currentConfig.temperature,
-      max_tokens: options?.pingMode ? 512 : currentConfig.maxTokens
+      temperature: effectiveTemperature,
+      max_tokens: effectiveMaxTokens
     };
+
+    console.log("[LlmService] Sending request", {
+      endpoint,
+      provider: currentConfig.provider,
+      model,
+      pingMode: Boolean(options?.pingMode),
+      configuredTemperature: currentConfig.temperature,
+      configuredMaxTokens: currentConfig.maxTokens,
+      effectiveTemperature: payload.temperature,
+      effectiveMaxTokens: payload.max_tokens,
+      messageCount: messages.length
+    });
 
     const response = await fetch(endpoint, {
       method: "POST",
       headers,
       body: JSON.stringify(payload)
+    });
+
+    console.log("[LlmService] Response received", {
+      ok: response.ok,
+      status: response.status,
+      statusText: response.statusText
     });
 
     if (!response.ok) {
@@ -186,13 +303,25 @@ export class LlmService {
     };
 
     const firstChoice = data.choices?.[0];
+    const finishReason = typeof firstChoice?.finish_reason === "string" ? firstChoice.finish_reason : "unknown";
     const content = extractTextFromMessageContent(firstChoice?.message?.content);
     if (content) {
-      return content;
+      console.log("[LlmService] Parsed message content", {
+        finishReason,
+        length: content.length,
+        endsWithClosingHtmlTag: hasClosingHtmlTag(content)
+      });
+      return { content, finishReason };
     }
 
     if (typeof firstChoice?.text === "string" && firstChoice.text.trim()) {
-      return firstChoice.text.trim();
+      const text = firstChoice.text.trim();
+      console.log("[LlmService] Parsed text content", {
+        finishReason,
+        length: text.length,
+        endsWithClosingHtmlTag: hasClosingHtmlTag(text)
+      });
+      return { content: text, finishReason };
     }
 
     const refusal = firstChoice?.message?.refusal;
@@ -200,7 +329,6 @@ export class LlmService {
       throw new Error(`LLM refused request: ${refusal.trim()}`);
     }
 
-    const finishReason = typeof firstChoice?.finish_reason === "string" ? firstChoice.finish_reason : "unknown";
     throw new Error(`LLM returned empty content (finish_reason: ${finishReason})`);
   }
 }

@@ -266,7 +266,7 @@ model LlmConfig {
   apiKey       String
   defaultModel String       @default("deepseek/deepseek-v4-flash")
   temperature  Float        @default(0.3)
-  maxTokens    Int          @default(4000)
+  maxTokens    Int          @default(12000)
   isActive     Boolean      @default(true)
   updatedAt    DateTime     @updatedAt
   updatedById  String?

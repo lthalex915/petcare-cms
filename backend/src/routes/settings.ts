@@ -68,7 +68,7 @@ router.put("/llm", async (req, res) => {
     apiKey: body.apiKey,
     defaultModel: body.defaultModel,
     temperature: Number(body.temperature ?? 0.3),
-    maxTokens: Number(body.maxTokens ?? 4000),
+    maxTokens: Number(body.maxTokens ?? 12000),
     updatedById: req.user!.userId
   });
 

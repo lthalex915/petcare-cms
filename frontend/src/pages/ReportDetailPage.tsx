@@ -88,7 +88,7 @@ export default function ReportDetailPage() {
             </>
           )}
           <button
-            onClick={() => exportReportToPDF("report-wrapper", `${report.title}.pdf`)}
+            onClick={() => exportReportToPDF("report-paper", `${report.title}.pdf`)}
             style={{ display: "flex", alignItems: "center", gap: 8, border: "1px solid #000", background: "#000", color: "#fff", padding: "8px 12px" }}
           >
             <IconPdf size={16} color="#fff" />
@@ -111,7 +111,7 @@ export default function ReportDetailPage() {
         </div>
       )}
 
-      <div id="report-wrapper">
+      <div id="report-wrapper" style={{ background: "#ececec", padding: "16px 10px", borderRadius: 6 }}>
         <ReportPreview html={editing ? draftHtml : report.htmlContent} />
       </div>
     </div>

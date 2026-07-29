@@ -57,7 +57,9 @@ CLINICAL TERMINOLOGY GUIDE
 - Distinguish objective data from interpretation.
 
 OUTPUT REQUIREMENTS
-- Return complete HTML fragment including style block and report body.
+- Return a complete HTML document, including <!doctype html>, <html>, <head>, and <body>.
+- The final non-whitespace characters in the response MUST be exactly </html>.
+- Do not include any text before <!doctype html> or after </html>.
 - Ensure style aligns with templates/daily-report.html, templates/weekly-report.html, templates/monthly-report.html.
 - Keep all content readable in print and web preview.
 `;

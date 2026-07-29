@@ -47,7 +47,7 @@ async function main() {
       apiKey: "",
       defaultModel: "deepseek/deepseek-v4-flash",
       temperature: 0.3,
-      maxTokens: 4000,
+      maxTokens: 12000,
       isActive: true,
       updatedById: admin.id
     }
