@@ -14,6 +14,8 @@ export default function IncidentForm({ date, pets, onSaved }: IncidentFormProps)
   const [severity, setSeverity] = useState("INFO");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [actionTaken, setActionTaken] = useState("");
+  const [resolved, setResolved] = useState(false);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -26,12 +28,15 @@ export default function IncidentForm({ date, pets, onSaved }: IncidentFormProps)
       severity,
       title,
       description,
-      resolved: false
+      actionTaken: actionTaken.trim() || null,
+      resolved
     })));
 
     setPetIds([]);
     setTitle("");
     setDescription("");
+    setActionTaken("");
+    setResolved(false);
     onSaved();
   }
 
@@ -47,6 +52,11 @@ export default function IncidentForm({ date, pets, onSaved }: IncidentFormProps)
       <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Incident title" required />
       <div style={{ gridColumn: "1 / -1", color: "#666", fontSize: 12 }}>Select one or more pets with checkboxes.</div>
       <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Incident description" required style={{ gridColumn: "1 / -1" }} />
+      <input value={actionTaken} onChange={(e) => setActionTaken(e.target.value)} placeholder="Action taken (optional)" style={{ gridColumn: "1 / -1" }} />
+      <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <input type="checkbox" checked={resolved} onChange={(e) => setResolved(e.target.checked)} />
+        Resolved
+      </label>
       <button type="submit" style={{ gridColumn: "1 / -1", background: "#000", color: "#fff", border: "none", padding: "10px 16px" }}>
         Add Incident Report
       </button>
