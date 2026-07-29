@@ -17,13 +17,18 @@ export default function DashboardPage() {
     const { user } = useAuth();
     useEffect(() => {
         async function load() {
-            const [petsRes, todayRes] = await Promise.all([
+            const [petsResult, todayResult] = await Promise.allSettled([
                 api.get("/pets"),
                 api.get("/daily-logs/today")
             ]);
-            setPets(asArray(petsRes.data));
-            const today = todayRes.data;
-            if (today) {
+            if (petsResult.status === "fulfilled") {
+                setPets(asArray(petsResult.value.data));
+            }
+            else {
+                setPets([]);
+            }
+            if (todayResult.status === "fulfilled" && todayResult.value.data) {
+                const today = todayResult.value.data;
                 const feedings = asArray(today.feedings);
                 const health = asArray(today.health);
                 const incidents = asArray(today.incidents);
@@ -42,9 +47,15 @@ export default function DashboardPage() {
                 }));
                 setActivity(feedItems);
             }
+            else {
+                setTodayData({ feedings: 0, health: 0, incidents: 0, supplies: 0 });
+                setActivity([]);
+            }
         }
         load().catch(() => {
             setPets([]);
+            setTodayData({ feedings: 0, health: 0, incidents: 0, supplies: 0 });
+            setActivity([]);
         });
     }, []);
     const dateText = useMemo(() => new Date().toLocaleDateString(undefined, { weekday: "long", day: "2-digit", month: "short", year: "numeric" }), []);

@@ -11,6 +11,7 @@ export interface PrismaFeatures {
   autoFeederTable: boolean;
   feedingFlavor: boolean;
   autoFeederFlavor: boolean;
+  feedingGramsField: "foodGrams" | "dryFoodGrams";
 }
 
 let featurePromise: Promise<PrismaFeatures> | null = null;
@@ -45,6 +46,9 @@ export function getPrismaFeatures(): Promise<PrismaFeatures> {
     featurePromise = (async () => {
       const modelFeedingFlavor = modelHasField("FeedingRecord", "flavor");
       const modelAutoFeederFlavor = modelHasField("AutoFeederSetting", "flavor");
+      const modelFoodGrams = modelHasField("FeedingRecord", "foodGrams");
+      const modelDryFoodGrams = modelHasField("FeedingRecord", "dryFoodGrams");
+      const feedingGramsField: "foodGrams" | "dryFoodGrams" = modelFoodGrams ? "foodGrams" : "dryFoodGrams";
 
       try {
         const [dbFeedingTable, dbAutoFeederTable] = await Promise.all([
@@ -60,13 +64,15 @@ export function getPrismaFeatures(): Promise<PrismaFeatures> {
         return {
           autoFeederTable: dbAutoFeederTable,
           feedingFlavor: modelFeedingFlavor && dbFeedingFlavor,
-          autoFeederFlavor: modelAutoFeederFlavor && dbAutoFeederFlavor
+          autoFeederFlavor: modelAutoFeederFlavor && dbAutoFeederFlavor,
+          feedingGramsField
         };
       } catch {
         return {
           autoFeederTable: false,
           feedingFlavor: false,
-          autoFeederFlavor: false
+          autoFeederFlavor: false,
+          feedingGramsField: modelDryFoodGrams ? "dryFoodGrams" : feedingGramsField
         };
       }
     })();

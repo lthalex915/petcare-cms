@@ -17,6 +17,7 @@ function toDateOnlyParts(date: Date): string {
 
 async function ensureAutoFeederRecordForDate(date: Date, userId: string) {
   const features = await getPrismaFeatures();
+  const feedingGramsField = features.feedingGramsField;
   const autoFeederSettingDelegate = (prisma as any).autoFeederSetting as {
     findUnique: (args: { where: { id: string }; select: Record<string, unknown> }) => Promise<any>;
   };
@@ -72,7 +73,7 @@ async function ensureAutoFeederRecordForDate(date: Date, userId: string) {
       foodType: (setting.foodType as FoodType) || FoodType.DRY,
       wetFoodBrand: setting.foodBrand || null,
       ...(features.feedingFlavor ? { flavor: setting.flavor || null } : {}),
-      foodGrams: typeof setting.amountGrams === "number" ? setting.amountGrams : null,
+      [feedingGramsField]: typeof setting.amountGrams === "number" ? setting.amountGrams : null,
       isAutoFeeder: true,
       consumedBy: petIds,
       notes: "AUTO_FEEDER_DAILY: Food provided by 自動餵食器"

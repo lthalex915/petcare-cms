@@ -25,6 +25,7 @@ router.get("/weight", async (req, res) => {
 
 router.get("/feeding", async (req, res) => {
   const features = await getPrismaFeatures();
+  const feedingGramsField = features.feedingGramsField;
   const start = req.query.start ? new Date(String(req.query.start)) : new Date("1970-01-01");
   const end = req.query.end ? new Date(String(req.query.end)) : new Date("2999-01-01");
 
@@ -34,7 +35,7 @@ router.get("/feeding", async (req, res) => {
       id: true,
       wetFoodBrand: true,
       wetFoodQty: true,
-      foodGrams: true,
+      [feedingGramsField]: true,
       ...(features.feedingFlavor ? { flavor: true } : {})
     }
   });
@@ -46,7 +47,8 @@ router.get("/feeding", async (req, res) => {
     }
     acc[brand].count += 1;
     acc[brand].wetQty += row.wetFoodQty ?? 0;
-    acc[brand].foodGrams += row.foodGrams ?? 0;
+    const grams = row[feedingGramsField as keyof typeof row];
+    acc[brand].foodGrams += typeof grams === "number" ? grams : 0;
     return acc;
   }, {});
 

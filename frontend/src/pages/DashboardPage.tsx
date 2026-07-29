@@ -20,14 +20,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const [petsRes, todayRes] = await Promise.all([
+      const [petsResult, todayResult] = await Promise.allSettled([
         api.get<Pet[]>("/pets"),
         api.get("/daily-logs/today")
       ]);
 
-      setPets(asArray<Pet>(petsRes.data));
-      const today = todayRes.data;
-      if (today) {
+      if (petsResult.status === "fulfilled") {
+        setPets(asArray<Pet>(petsResult.value.data));
+      } else {
+        setPets([]);
+      }
+
+      if (todayResult.status === "fulfilled" && todayResult.value.data) {
+        const today = todayResult.value.data;
         const feedings = asArray<any>(today.feedings);
         const health = asArray<any>(today.health);
         const incidents = asArray<any>(today.incidents);
@@ -47,11 +52,16 @@ export default function DashboardPage() {
           petName: row.petId
         }));
         setActivity(feedItems);
+      } else {
+        setTodayData({ feedings: 0, health: 0, incidents: 0, supplies: 0 });
+        setActivity([]);
       }
     }
 
     load().catch(() => {
       setPets([]);
+      setTodayData({ feedings: 0, health: 0, incidents: 0, supplies: 0 });
+      setActivity([]);
     });
   }, []);
 

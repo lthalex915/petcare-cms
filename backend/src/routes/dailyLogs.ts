@@ -22,7 +22,7 @@ function dayRange(dateString: string) {
   return { start, end };
 }
 
-function feedingRecordSelect(includeFlavor: boolean) {
+function feedingRecordSelect(includeFlavor: boolean, feedingGramsField: "foodGrams" | "dryFoodGrams") {
   return {
     id: true,
     dailyLogId: true,
@@ -32,7 +32,7 @@ function feedingRecordSelect(includeFlavor: boolean) {
     wetFoodBrand: true,
     ...(includeFlavor ? { flavor: true } : {}),
     wetFoodQty: true,
-    foodGrams: true,
+    [feedingGramsField]: true,
     isAutoFeeder: true,
     consumedBy: true,
     notes: true,
@@ -46,7 +46,7 @@ async function getLogByDate(dateString: string) {
   const log = await prisma.dailyLog.findFirst({
     where: { date: { gte: start, lt: end } },
     include: {
-      feedings: { select: feedingRecordSelect(features.feedingFlavor) },
+      feedings: { select: feedingRecordSelect(features.feedingFlavor, features.feedingGramsField) },
       health: true,
       activities: true,
       incidents: true,
@@ -149,14 +149,25 @@ const resourceConfig = {
   feedings: {
     delegate: prisma.feedingRecord,
     include: { pet: true },
-    transform: (data: Record<string, unknown>, features: PrismaFeatures) => {
-      const { flavor: _ignoredFlavor, ...rest } = data;
-      return {
-        ...rest,
-        ...(features.feedingFlavor ? { flavor: typeof data.flavor === "string" ? data.flavor : null } : {}),
-        mealTime: data.mealTime ? new Date(String(data.mealTime)) : new Date()
-      };
-    }
+      transform: (data: Record<string, unknown>, features: PrismaFeatures) => {
+        const { flavor: _ignoredFlavor, ...rest } = data;
+
+        const normalizedGrams =
+          typeof data.foodGrams === "number"
+            ? data.foodGrams
+            : typeof data.dryFoodGrams === "number"
+              ? data.dryFoodGrams
+              : null;
+
+        return {
+          ...rest,
+          ...(features.feedingGramsField === "foodGrams"
+            ? { foodGrams: normalizedGrams }
+            : { dryFoodGrams: normalizedGrams }),
+          ...(features.feedingFlavor ? { flavor: typeof data.flavor === "string" ? data.flavor : null } : {}),
+          mealTime: data.mealTime ? new Date(String(data.mealTime)) : new Date()
+        };
+      }
   },
   health: {
     delegate: prisma.healthRecord,
@@ -237,7 +248,7 @@ router.get("/:date/:resource", async (req, res) => {
   const features = await getPrismaFeatures();
   const rows = await delegate.findMany({
     where: { dailyLogId: log.id },
-    ...(resource === "feedings" ? { select: { ...feedingRecordSelect(features.feedingFlavor), pet: true } } : {}),
+    ...(resource === "feedings" ? { select: { ...feedingRecordSelect(features.feedingFlavor, features.feedingGramsField), pet: true } } : {}),
     ...(resource !== "feedings" && cfg.include ? { include: cfg.include } : {})
   });
   res.json(rows);
@@ -263,7 +274,7 @@ router.post("/:date/:resource", async (req, res) => {
             dailyLogId: log.id,
             ...cfg.transform(input, features)
           },
-          select: feedingRecordSelect(features.feedingFlavor)
+          select: feedingRecordSelect(features.feedingFlavor, features.feedingGramsField)
         }
       : {
           data: {
@@ -292,7 +303,7 @@ router.put("/:date/:resource/:id", requireAdminMode, async (req, res) => {
       ? {
           where: { id: req.params.id },
           data: cfg.transform(input, features),
-          select: feedingRecordSelect(features.feedingFlavor)
+          select: feedingRecordSelect(features.feedingFlavor, features.feedingGramsField)
         }
       : {
           where: { id: req.params.id },

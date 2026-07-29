@@ -163,6 +163,7 @@ export class ReportGeneratorService {
     });
 
     const features = await getPrismaFeatures();
+    const feedingGramsField = features.feedingGramsField;
     const { start, end } = getPeriod(type, normalizedInput);
 
     const logs = await prisma.dailyLog.findMany({
@@ -178,7 +179,7 @@ export class ReportGeneratorService {
             wetFoodBrand: true,
             ...(features.feedingFlavor ? { flavor: true } : {}),
             wetFoodQty: true,
-            foodGrams: true,
+            [feedingGramsField]: true,
             isAutoFeeder: true,
             consumedBy: true,
             notes: true,
