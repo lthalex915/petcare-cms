@@ -18,9 +18,6 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem("petcare_token");
       localStorage.removeItem("petcare_user");
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
-      }
     }
     return Promise.reject(error);
   }

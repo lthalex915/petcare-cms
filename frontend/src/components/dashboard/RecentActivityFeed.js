@@ -1,0 +1,4 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+export default function RecentActivityFeed({ items }) {
+    return (_jsxs("div", { className: "section-card", style: { marginTop: 24 }, children: [_jsx("div", { style: { fontSize: 15, fontWeight: 700, marginBottom: 12 }, children: "Recent Activity Feed" }), items.length === 0 && _jsx("div", { style: { color: "#999" }, children: "No recent entries" }), items.map((item) => (_jsxs("div", { style: { padding: "10px 0", borderBottom: "1px solid #f5f5f5", display: "flex", gap: 12 }, children: [_jsx("div", { style: { fontSize: 11, color: "#999", minWidth: 60 }, children: item.time }), _jsxs("div", { children: [_jsx("div", { style: { fontSize: 12, color: "#333", lineHeight: 1.5 }, children: item.text }), item.petName && _jsx("div", { style: { fontSize: 11, color: "#999" }, children: item.petName })] })] }, item.id)))] }));
+}

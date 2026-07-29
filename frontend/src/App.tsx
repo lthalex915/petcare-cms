@@ -1,12 +1,10 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/layout/AppLayout";
-import ProtectedRoute from "./components/layout/ProtectedRoute";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import DailyLogDetailPage from "./pages/DailyLogDetailPage";
 import DailyLogFormPage from "./pages/DailyLogFormPage";
 import DailyLogListPage from "./pages/DailyLogListPage";
 import DashboardPage from "./pages/DashboardPage";
-import LoginPage from "./pages/LoginPage";
 import PetDetailPage from "./pages/PetDetailPage";
 import PetListPage from "./pages/PetListPage";
 import ReportDetailPage from "./pages/ReportDetailPage";
@@ -16,15 +14,8 @@ import SettingsPage from "./pages/SettingsPage";
 export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <AppLayout />
-          </ProtectedRoute>
-        }
-      >
+      <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<AppLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="pets" element={<PetListPage />} />

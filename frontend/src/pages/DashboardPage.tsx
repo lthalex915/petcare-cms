@@ -8,6 +8,10 @@ import api from "../services/api";
 import type { Pet } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 
+function asArray<T>(value: unknown): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
 export default function DashboardPage() {
   const [pets, setPets] = useState<Pet[]>([]);
   const [todayData, setTodayData] = useState({ feedings: 0, health: 0, incidents: 0, supplies: 0 });
@@ -21,17 +25,22 @@ export default function DashboardPage() {
         api.get("/daily-logs/today")
       ]);
 
-      setPets(petsRes.data);
+      setPets(asArray<Pet>(petsRes.data));
       const today = todayRes.data;
       if (today) {
+        const feedings = asArray<any>(today.feedings);
+        const health = asArray<any>(today.health);
+        const incidents = asArray<any>(today.incidents);
+        const supplies = asArray<any>(today.supplies);
+
         setTodayData({
-          feedings: today.feedings?.length ?? 0,
-          health: today.health?.length ?? 0,
-          incidents: today.incidents?.length ?? 0,
-          supplies: today.supplies?.length ?? 0
+          feedings: feedings.length,
+          health: health.length,
+          incidents: incidents.length,
+          supplies: supplies.length
         });
 
-        const feedItems = (today.feedings ?? []).slice(0, 8).map((row: any) => ({
+        const feedItems = feedings.slice(0, 8).map((row: any) => ({
           id: `f-${row.id}`,
           time: new Date(row.mealTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           text: `Feeding recorded (${row.foodType})`,
