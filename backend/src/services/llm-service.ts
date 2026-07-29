@@ -1,4 +1,7 @@
 import { ProviderType, type LlmConfig } from "@prisma/client";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { config } from "../config.js";
 import { prisma } from "../prisma.js";
 import { SYSTEM_PROMPT } from "./report-system-prompt.js";
@@ -27,6 +30,19 @@ type LlmCallResult = {
   content: string;
   finishReason: string;
 };
+
+type ReportTemplateType = "DAILY" | "WEEKLY" | "MONTHLY";
+
+const REPORT_TEMPLATE_FILE_BY_TYPE: Record<ReportTemplateType, string> = {
+  DAILY: "daily-report.html",
+  WEEKLY: "weekly-report.html",
+  MONTHLY: "monthly-report.html"
+};
+
+const serviceDirectory = path.dirname(fileURLToPath(import.meta.url));
+const projectRootDirectory = path.resolve(serviceDirectory, "../../..");
+const templatesDirectory = path.join(projectRootDirectory, "templates");
+const reportTemplateCache = new Map<ReportTemplateType, string>();
 
 function isMaskedApiKey(value: string | null | undefined): boolean {
   return typeof value === "string" && value.includes("*");
@@ -65,6 +81,33 @@ function extractTextFromMessageContent(content: unknown): string {
 
 function hasClosingHtmlTag(html: string): boolean {
   return html.trimEnd().toLowerCase().endsWith("</html>");
+}
+
+function extractReportTypeFromInput(input: unknown): ReportTemplateType | null {
+  if (!input || typeof input !== "object") {
+    return null;
+  }
+
+  const reportType = (input as { reportType?: unknown }).reportType;
+  if (reportType === "DAILY" || reportType === "WEEKLY" || reportType === "MONTHLY") {
+    return reportType;
+  }
+
+  return null;
+}
+
+async function loadReportTemplateHtml(reportType: ReportTemplateType): Promise<string> {
+  const cached = reportTemplateCache.get(reportType);
+  if (cached) {
+    return cached;
+  }
+
+  const fileName = REPORT_TEMPLATE_FILE_BY_TYPE[reportType];
+  const templatePath = path.join(templatesDirectory, fileName);
+  const html = await readFile(templatePath, "utf8");
+  const normalized = html.trim();
+  reportTemplateCache.set(reportType, normalized);
+  return normalized;
 }
 
 function sanitizeTemperature(value: unknown): number {
@@ -157,10 +200,37 @@ export class LlmService {
       throw new Error("LLM API key is not configured");
     }
 
-    const initialMessages: ChatMessage[] = [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: JSON.stringify(aggregatedData) }
-    ];
+    const reportType = extractReportTypeFromInput(aggregatedData);
+    let templateHtml: string | null = null;
+
+    if (reportType) {
+      try {
+        templateHtml = await loadReportTemplateHtml(reportType);
+      } catch (error) {
+        console.warn("[LlmService] Failed to load report template", {
+          reportType,
+          reason: error instanceof Error ? error.message : String(error)
+        });
+      }
+    }
+
+    const initialMessages: ChatMessage[] = [{ role: "system", content: SYSTEM_PROMPT }];
+
+    if (templateHtml && reportType) {
+      initialMessages.push({
+        role: "user",
+        content:
+          `STRICT TEMPLATE ENFORCEMENT (${reportType})\n` +
+          "You MUST follow the exact format, structure, style, CSS classes, and visual design language of this template. " +
+          "Keep the same monochrome design system and report layout conventions. " +
+          "Replace only content values with data-derived values; do not change the overall template design intent.\n\n" +
+          "TEMPLATE HTML START\n" +
+          `${templateHtml}\n` +
+          "TEMPLATE HTML END"
+      });
+    }
+
+    initialMessages.push({ role: "user", content: JSON.stringify(aggregatedData) });
 
     const reportConfig: LlmConfig = {
       ...mergedConfig,
@@ -196,14 +266,17 @@ export class LlmService {
         throw new Error(`LLM returned incomplete report (finish_reason: ${result.finishReason})`);
       }
 
-      messages.push(
-        { role: "assistant", content: result.content },
-        {
-          role: "user",
-          content: "Continue exactly from where you stopped. Do not repeat previous content. Return only the remaining HTML so the final full output ends with </html>."
-        }
-      );
-    }
+        messages.push(
+          { role: "assistant", content: result.content },
+          {
+            role: "user",
+            content:
+              "Continue exactly from where you stopped. Do not repeat previous content. " +
+              "Return only the remaining HTML so the final full output ends with </html>. " +
+              "Preserve strict template format, style, and structure."
+          }
+        );
+      }
 
     throw new Error("LLM report generation exceeded continuation limit before closing </html> tag");
   }
