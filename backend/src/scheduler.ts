@@ -72,7 +72,7 @@ async function ensureAutoFeederRecordForDate(date: Date, userId: string) {
       foodType: (setting.foodType as FoodType) || FoodType.DRY,
       wetFoodBrand: setting.foodBrand || null,
       ...(features.feedingFlavor ? { flavor: setting.flavor || null } : {}),
-      dryFoodGrams: typeof setting.amountGrams === "number" ? setting.amountGrams : null,
+      foodGrams: typeof setting.amountGrams === "number" ? setting.amountGrams : null,
       isAutoFeeder: true,
       consumedBy: petIds,
       notes: "AUTO_FEEDER_DAILY: Food provided by 自動餵食器"

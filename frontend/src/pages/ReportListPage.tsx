@@ -4,10 +4,21 @@ import { useAuth } from "../contexts/AuthContext";
 import api from "../services/api";
 import type { Report } from "../types";
 
+function toDateOnly(date: Date): string {
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 export default function ReportListPage() {
   const { adminMode } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
   const [generatingType, setGeneratingType] = useState<"DAILY" | "WEEKLY" | "MONTHLY" | null>(null);
+  const [dateMode, setDateMode] = useState<"single" | "range">("single");
+  const [singleDate, setSingleDate] = useState<string>(() => toDateOnly(new Date()));
+  const [rangeStartDate, setRangeStartDate] = useState<string>(() => toDateOnly(new Date()));
+  const [rangeEndDate, setRangeEndDate] = useState<string>(() => toDateOnly(new Date()));
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
   const [errorText, setErrorText] = useState("");
@@ -33,6 +44,22 @@ export default function ReportListPage() {
   }
 
   async function generate(type: "DAILY" | "WEEKLY" | "MONTHLY") {
+    if (dateMode === "single" && !singleDate) {
+      setErrorText("Please select a date before generating report.");
+      return;
+    }
+
+    if (dateMode === "range") {
+      if (!rangeStartDate || !rangeEndDate) {
+        setErrorText("Please select both start and end date for range report.");
+        return;
+      }
+      if (rangeStartDate > rangeEndDate) {
+        setErrorText("Start date must be on or before end date.");
+        return;
+      }
+    }
+
     setGeneratingType(type);
     setProgress(5);
     setStatusText("Starting report generation...");
@@ -47,7 +74,15 @@ export default function ReportListPage() {
     }, 700);
 
     try {
-      await api.post("/reports/generate", { type });
+      await api.post("/reports/generate", {
+        type,
+        ...(dateMode === "single"
+          ? { date: singleDate }
+          : {
+              startDate: rangeStartDate,
+              endDate: rangeEndDate
+            })
+      });
       window.clearInterval(timer);
       setProgress(100);
       setStatusText("Report is ready.");
@@ -83,11 +118,69 @@ export default function ReportListPage() {
     <div className="page-card">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <h1 style={{ margin: 0, fontSize: 20 }}>Reports</h1>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
           <button disabled={Boolean(generatingType)} onClick={() => generate("DAILY")} style={{ border: "1px solid #000", background: "#000", color: "#fff", padding: "8px 10px", opacity: generatingType ? 0.5 : 1 }}>Generate Daily</button>
           <button disabled={Boolean(generatingType)} onClick={() => generate("WEEKLY")} style={{ border: "1px solid #000", background: "#fff", color: "#000", padding: "8px 10px", opacity: generatingType ? 0.5 : 1 }}>Generate Weekly</button>
           <button disabled={Boolean(generatingType)} onClick={() => generate("MONTHLY")} style={{ border: "1px solid #000", background: "#fff", color: "#000", padding: "8px 10px", opacity: generatingType ? 0.5 : 1 }}>Generate Monthly</button>
         </div>
+      </div>
+
+      <div style={{ marginBottom: 12, border: "1px solid #ddd", background: "#fafafa", padding: 12 }}>
+        <div style={{ fontWeight: 700, marginBottom: 8 }}>Report Date Selection</div>
+        <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap", marginBottom: 10 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input
+              type="radio"
+              name="report-date-mode"
+              checked={dateMode === "single"}
+              onChange={() => setDateMode("single")}
+              disabled={Boolean(generatingType)}
+            />
+            Single day
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <input
+              type="radio"
+              name="report-date-mode"
+              checked={dateMode === "range"}
+              onChange={() => setDateMode("range")}
+              disabled={Boolean(generatingType)}
+            />
+            Date range
+          </label>
+        </div>
+
+        {dateMode === "single" ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <label htmlFor="report-single-date" style={{ fontSize: 13, color: "#333" }}>Date</label>
+            <input
+              id="report-single-date"
+              type="date"
+              value={singleDate}
+              onChange={(e) => setSingleDate(e.target.value)}
+              disabled={Boolean(generatingType)}
+            />
+          </div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <label htmlFor="report-range-start" style={{ fontSize: 13, color: "#333" }}>Start</label>
+            <input
+              id="report-range-start"
+              type="date"
+              value={rangeStartDate}
+              onChange={(e) => setRangeStartDate(e.target.value)}
+              disabled={Boolean(generatingType)}
+            />
+            <label htmlFor="report-range-end" style={{ fontSize: 13, color: "#333" }}>End</label>
+            <input
+              id="report-range-end"
+              type="date"
+              value={rangeEndDate}
+              onChange={(e) => setRangeEndDate(e.target.value)}
+              disabled={Boolean(generatingType)}
+            />
+          </div>
+        )}
       </div>
 
       {generatingType && (

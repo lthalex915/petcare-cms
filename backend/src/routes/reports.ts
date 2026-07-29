@@ -9,6 +9,19 @@ const router = Router();
 const generator = new ReportGeneratorService();
 router.use(authenticate);
 
+function parseDateOnlyInput(value: string, field: string): Date {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw new HttpError(400, `${field} must be YYYY-MM-DD`);
+  }
+
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new HttpError(400, `${field} must be YYYY-MM-DD`);
+  }
+
+  return parsed;
+}
+
 router.get("/", async (req, res) => {
   const page = Number(req.query.page ?? 1);
   const pageSize = 20;
@@ -41,12 +54,49 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/generate", async (req, res) => {
-  const { type, date } = req.body as { type?: ReportType; date?: string };
+  const { type, date, startDate, endDate } = req.body as {
+    type?: ReportType;
+    date?: string;
+    startDate?: string;
+    endDate?: string;
+  };
   if (!type || !Object.values(ReportType).includes(type)) {
     throw new HttpError(400, "Invalid report type");
   }
 
-  const report = await generator.generate(type, req.user!.userId, date);
+  if (date !== undefined && typeof date !== "string") {
+    throw new HttpError(400, "date must be YYYY-MM-DD");
+  }
+
+  if (startDate !== undefined && typeof startDate !== "string") {
+    throw new HttpError(400, "startDate must be YYYY-MM-DD");
+  }
+
+  if (endDate !== undefined && typeof endDate !== "string") {
+    throw new HttpError(400, "endDate must be YYYY-MM-DD");
+  }
+
+  if ((startDate && !endDate) || (!startDate && endDate)) {
+    throw new HttpError(400, "Both startDate and endDate are required for range reports");
+  }
+
+  if (date) {
+    parseDateOnlyInput(date, "date");
+  }
+
+  if (startDate && endDate) {
+    const start = parseDateOnlyInput(startDate, "startDate");
+    const end = parseDateOnlyInput(endDate, "endDate");
+    if (start.getTime() > end.getTime()) {
+      throw new HttpError(400, "startDate must be on or before endDate");
+    }
+  }
+
+  const report = await generator.generate(type, req.user!.userId, {
+    date,
+    startDate,
+    endDate
+  });
   res.status(201).json(report);
 });
 

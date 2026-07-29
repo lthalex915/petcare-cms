@@ -148,7 +148,7 @@ model FeedingRecord {
   wetFoodBrand String?
   flavor       String?
   wetFoodQty   Float?
-  dryFoodGrams Float?
+  foodGrams    Float?   @map("dryFoodGrams")
   isAutoFeeder Boolean  @default(false)
   consumedBy   String[]
   notes        String?

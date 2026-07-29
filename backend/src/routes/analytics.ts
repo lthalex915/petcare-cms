@@ -34,19 +34,19 @@ router.get("/feeding", async (req, res) => {
       id: true,
       wetFoodBrand: true,
       wetFoodQty: true,
-      dryFoodGrams: true,
+      foodGrams: true,
       ...(features.feedingFlavor ? { flavor: true } : {})
     }
   });
 
-  const byBrand = rows.reduce<Record<string, { count: number; wetQty: number; dryGrams: number }>>((acc, row) => {
+  const byBrand = rows.reduce<Record<string, { count: number; wetQty: number; foodGrams: number }>>((acc, row) => {
     const brand = row.wetFoodBrand ?? "Unknown";
     if (!acc[brand]) {
-      acc[brand] = { count: 0, wetQty: 0, dryGrams: 0 };
+      acc[brand] = { count: 0, wetQty: 0, foodGrams: 0 };
     }
     acc[brand].count += 1;
     acc[brand].wetQty += row.wetFoodQty ?? 0;
-    acc[brand].dryGrams += row.dryFoodGrams ?? 0;
+    acc[brand].foodGrams += row.foodGrams ?? 0;
     return acc;
   }, {});
 

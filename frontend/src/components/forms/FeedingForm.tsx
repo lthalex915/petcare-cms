@@ -15,7 +15,7 @@ export default function FeedingForm({ date, pets, onSaved }: FeedingFormProps) {
   const [foodType, setFoodType] = useState("WET");
   const [wetFoodBrand, setWetFoodBrand] = useState("");
   const [flavor, setFlavor] = useState("");
-  const [dryFoodGrams, setDryFoodGrams] = useState("");
+  const [foodGrams, setFoodGrams] = useState("");
   const [notes, setNotes] = useState("");
   const frequentFoods = readFrequentFoods();
 
@@ -43,7 +43,7 @@ export default function FeedingForm({ date, pets, onSaved }: FeedingFormProps) {
       foodType,
       wetFoodBrand: wetFoodBrand || null,
       flavor: flavor.trim() || null,
-      dryFoodGrams: dryFoodGrams ? Number(dryFoodGrams) : null,
+      foodGrams: foodGrams ? Number(foodGrams) : null,
       consumedBy,
       isAutoFeeder: foodType === "DRY",
       notes: notes || null
@@ -81,7 +81,7 @@ export default function FeedingForm({ date, pets, onSaved }: FeedingFormProps) {
           ))
         )}
       </div>
-      <input value={dryFoodGrams} onChange={(e) => setDryFoodGrams(e.target.value)} placeholder="Dry food grams" />
+      <input value={foodGrams} onChange={(e) => setFoodGrams(e.target.value)} placeholder="Food grams (wet + dry)" />
       <div style={{ gridColumn: "1 / -1", color: "#666", fontSize: 12 }}>Select one or more pets with checkboxes.</div>
       <textarea style={{ gridColumn: "1 / -1" }} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notes" />
       <button type="submit" style={{ gridColumn: "1 / -1", background: "#000", color: "#fff", border: "none", padding: "10px 16px" }}>

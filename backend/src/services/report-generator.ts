@@ -2,26 +2,68 @@ import { Prisma, ReportType } from "@prisma/client";
 import { getPrismaFeatures, prisma } from "../prisma.js";
 import { LlmService } from "./llm-service.js";
 
-function getPeriod(type: ReportType, dateInput?: string) {
-  const base = dateInput ? new Date(dateInput) : new Date();
+interface GeneratePeriodInput {
+  date?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+function parseDateInput(dateText: string, field: string): Date {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateText)) {
+    throw new Error(`Invalid ${field}. Expected YYYY-MM-DD`);
+  }
+
+  const parsed = new Date(`${dateText}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`Invalid ${field}. Expected YYYY-MM-DD`);
+  }
+
+  return parsed;
+}
+
+function getPeriod(type: ReportType, input?: string | GeneratePeriodInput) {
+  const normalizedInput = typeof input === "string" ? { date: input } : input;
+  const startDateInput = normalizedInput?.startDate;
+  const endDateInput = normalizedInput?.endDate;
+
+  if (startDateInput || endDateInput) {
+    if (!startDateInput || !endDateInput) {
+      throw new Error("Both startDate and endDate are required for range reports");
+    }
+
+    const start = parseDateInput(startDateInput, "startDate");
+    start.setUTCHours(0, 0, 0, 0);
+    const end = parseDateInput(endDateInput, "endDate");
+    end.setUTCHours(23, 59, 59, 999);
+
+    if (start.getTime() > end.getTime()) {
+      throw new Error("startDate must be on or before endDate");
+    }
+
+    return { start, end };
+  }
+
+  const base = normalizedInput?.date
+    ? parseDateInput(normalizedInput.date, "date")
+    : new Date();
   const end = new Date(base);
-  end.setHours(23, 59, 59, 999);
+  end.setUTCHours(23, 59, 59, 999);
 
   if (type === ReportType.DAILY) {
     const start = new Date(base);
-    start.setHours(0, 0, 0, 0);
+    start.setUTCHours(0, 0, 0, 0);
     return { start, end };
   }
 
   if (type === ReportType.WEEKLY) {
     const start = new Date(base);
-    start.setDate(base.getDate() - 6);
-    start.setHours(0, 0, 0, 0);
+    start.setUTCDate(base.getUTCDate() - 6);
+    start.setUTCHours(0, 0, 0, 0);
     return { start, end };
   }
 
-  const start = new Date(base.getFullYear(), base.getMonth(), 1);
-  start.setHours(0, 0, 0, 0);
+  const start = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), 1));
+  start.setUTCHours(0, 0, 0, 0);
   return { start, end };
 }
 
@@ -109,15 +151,19 @@ function normalizeGeneratedHtml(rawHtml: string): string {
 export class ReportGeneratorService {
   private llm = new LlmService();
 
-  async generate(type: ReportType, generatedById: string, date?: string) {
+  async generate(type: ReportType, generatedById: string, dateOrPeriod?: string | GeneratePeriodInput) {
+    const normalizedInput = typeof dateOrPeriod === "string" ? { date: dateOrPeriod } : dateOrPeriod;
+
     console.log("[ReportGenerator] Starting report generation", {
       type,
       generatedById,
-      date: date ?? null
+      date: normalizedInput?.date ?? null,
+      startDate: normalizedInput?.startDate ?? null,
+      endDate: normalizedInput?.endDate ?? null
     });
 
     const features = await getPrismaFeatures();
-    const { start, end } = getPeriod(type, date);
+    const { start, end } = getPeriod(type, normalizedInput);
 
     const logs = await prisma.dailyLog.findMany({
       where: { date: { gte: start, lte: end } },
@@ -132,7 +178,7 @@ export class ReportGeneratorService {
             wetFoodBrand: true,
             ...(features.feedingFlavor ? { flavor: true } : {}),
             wetFoodQty: true,
-            dryFoodGrams: true,
+            foodGrams: true,
             isAutoFeeder: true,
             consumedBy: true,
             notes: true,

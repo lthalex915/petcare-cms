@@ -32,7 +32,7 @@ function feedingRecordSelect(includeFlavor: boolean) {
     wetFoodBrand: true,
     ...(includeFlavor ? { flavor: true } : {}),
     wetFoodQty: true,
-    dryFoodGrams: true,
+    foodGrams: true,
     isAutoFeeder: true,
     consumedBy: true,
     notes: true,
