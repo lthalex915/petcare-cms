@@ -3,18 +3,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import api from "../services/api";
 const palette = ["#000000", "#333333", "#666666", "#999999"];
-function asArray(value) {
-    if (Array.isArray(value)) {
-        return value;
-    }
-    if (Array.isArray(value?.data)) {
-        return value.data;
-    }
-    if (Array.isArray(value?.items)) {
-        return value.items;
-    }
-    return [];
-}
 export default function AnalyticsPage() {
     const [pets, setPets] = useState([]);
     const [petId, setPetId] = useState("");
@@ -24,10 +12,9 @@ export default function AnalyticsPage() {
     const [activityData, setActivityData] = useState([]);
     useEffect(() => {
         api.get("/pets").then((res) => {
-            const nextPets = asArray(res.data);
-            setPets(nextPets);
-            if (nextPets.length > 0) {
-                setPetId(nextPets[0].id);
+            setPets(res.data);
+            if (res.data.length > 0) {
+                setPetId(res.data[0].id);
             }
         });
     }, []);
@@ -39,10 +26,10 @@ export default function AnalyticsPage() {
                 api.get("/analytics/health", { params: petId ? { petId } : {} }),
                 api.get("/analytics/activity", { params: petId ? { petId } : {} })
             ]);
-            setWeightData(asArray(weight.data));
-            setFeedingData(asArray(feeding.data));
-            setHealthData(asArray(health.data));
-            setActivityData(asArray(activity.data));
+            setWeightData(weight.data);
+            setFeedingData(feeding.data);
+            setHealthData(health.data);
+            setActivityData(activity.data);
         }
         load().catch(() => {
             setWeightData([]);

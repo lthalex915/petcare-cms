@@ -63,23 +63,31 @@ router.post("/llm/test", async (req, res) => {
     apiBaseUrl: string;
     apiKey: string;
     model: string;
+    maxTokens?: number;
   };
 
-  if (!body.provider || !body.apiBaseUrl || !body.apiKey || !body.model) {
-    throw new HttpError(400, "provider, apiBaseUrl, apiKey and model are required");
+  if (!body.provider || !body.apiBaseUrl || !body.model) {
+    throw new HttpError(400, "provider, apiBaseUrl and model are required");
   }
 
-  const result = await llmService.testConnection({
-    provider: body.provider,
-    apiBaseUrl: body.apiBaseUrl,
-    apiKey: body.apiKey,
-    defaultModel: body.model,
-    temperature: 0.3,
-    maxTokens: 128,
-    updatedById: req.user!.userId
-  });
+  try {
+    const result = await llmService.testConnection({
+      provider: body.provider,
+      apiBaseUrl: body.apiBaseUrl,
+      apiKey: body.apiKey,
+      defaultModel: body.model,
+      temperature: 0.3,
+      maxTokens: Number(body.maxTokens ?? 512),
+      updatedById: req.user!.userId
+    });
 
-  res.json(result);
+    res.json(result);
+  } catch (error) {
+    res.json({
+      success: false,
+      response: error instanceof Error ? error.message : "Connection test failed"
+    });
+  }
 });
 
 export default router;

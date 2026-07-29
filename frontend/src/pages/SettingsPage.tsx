@@ -13,6 +13,53 @@ const defaultConfig: LlmConfig = {
   isActive: true
 };
 
+function normalizeConfig(value: Partial<LlmConfig> | null | undefined): LlmConfig {
+  if (!value) {
+    return defaultConfig;
+  }
+
+  const temperature = typeof value.temperature === "number" ? value.temperature : Number(value.temperature);
+  const maxTokens = typeof value.maxTokens === "number" ? value.maxTokens : Number(value.maxTokens);
+
+  return {
+    ...defaultConfig,
+    ...value,
+    provider: typeof value.provider === "string" ? value.provider : defaultConfig.provider,
+    apiBaseUrl: typeof value.apiBaseUrl === "string" ? value.apiBaseUrl : defaultConfig.apiBaseUrl,
+    apiKey: typeof value.apiKey === "string" ? value.apiKey : defaultConfig.apiKey,
+    defaultModel: typeof value.defaultModel === "string" ? value.defaultModel : defaultConfig.defaultModel,
+    temperature: Number.isFinite(temperature) ? temperature : defaultConfig.temperature,
+    maxTokens: Number.isFinite(maxTokens) ? maxTokens : defaultConfig.maxTokens,
+    isActive: typeof value.isActive === "boolean" ? value.isActive : defaultConfig.isActive
+  };
+}
+
+function extractErrorMessage(error: unknown): string {
+  if (typeof error === "object" && error !== null && "response" in error) {
+    const response = (error as { response?: { data?: unknown; status?: number } }).response;
+    const data = response?.data;
+
+    if (typeof data === "object" && data !== null) {
+      if ("response" in data && typeof (data as { response?: unknown }).response === "string") {
+        return (data as { response: string }).response;
+      }
+      if ("message" in data && typeof (data as { message?: unknown }).message === "string") {
+        return (data as { message: string }).message;
+      }
+    }
+
+    if (typeof response?.status === "number") {
+      return `HTTP ${response.status}`;
+    }
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Unknown error";
+}
+
 export default function SettingsPage() {
   const [config, setConfig] = useState<LlmConfig>(defaultConfig);
   const [showKey, setShowKey] = useState(false);
@@ -23,8 +70,10 @@ export default function SettingsPage() {
   useEffect(() => {
     api.get<LlmConfig | null>("/settings/llm").then((res) => {
       if (res.data) {
-        setConfig(res.data);
+        setConfig(normalizeConfig(res.data));
       }
+    }).catch(() => {
+      setConfig(defaultConfig);
     });
   }, []);
 
@@ -37,7 +86,7 @@ export default function SettingsPage() {
         apiKey: config.apiKey.includes("*") ? "" : config.apiKey
       };
       const response = await api.put<LlmConfig>("/settings/llm", payload);
-      setConfig(response.data);
+      setConfig(normalizeConfig(response.data));
       setResult("Configuration saved");
     } catch {
       setResult("Failed to save configuration");
@@ -54,12 +103,13 @@ export default function SettingsPage() {
       const response = await api.post<{ success: boolean; response: string }>("/settings/llm/test", {
         provider: config.provider,
         apiBaseUrl: config.apiBaseUrl,
-        apiKey: config.apiKey,
-        model: testModel
+        apiKey: config.apiKey.includes("*") ? "" : config.apiKey,
+        model: testModel,
+        maxTokens: Math.max(512, config.maxTokens || 0)
       });
-      setResult(response.data.success ? `Connection success: ${response.data.response}` : "Connection failed");
-    } catch {
-      setResult("Connection test failed");
+      setResult(response.data.success ? `Connection success: ${response.data.response}` : `Connection failed: ${response.data.response || "Unknown error"}`);
+    } catch (error) {
+      setResult(`Connection test failed: ${extractErrorMessage(error)}`);
     } finally {
       setTesting(false);
     }

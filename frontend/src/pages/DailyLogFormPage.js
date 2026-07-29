@@ -25,18 +25,6 @@ function todayIso() {
     const dd = String(d.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
 }
-function asArray(value) {
-    if (Array.isArray(value)) {
-        return value;
-    }
-    if (Array.isArray(value?.data)) {
-        return value.data;
-    }
-    if (Array.isArray(value?.items)) {
-        return value.items;
-    }
-    return [];
-}
 export default function DailyLogFormPage() {
     const [date, setDate] = useState(todayIso());
     const [pets, setPets] = useState([]);
@@ -44,7 +32,7 @@ export default function DailyLogFormPage() {
     const [saving, setSaving] = useState(false);
     const navigate = useNavigate();
     useEffect(() => {
-        api.get("/pets").then((res) => setPets(asArray(res.data))).catch(() => setPets([]));
+        api.get("/pets").then((res) => setPets(res.data)).catch(() => setPets([]));
     }, []);
     async function ensureLogAndGenerate() {
         setSaving(true);

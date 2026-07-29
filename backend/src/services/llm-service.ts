@@ -13,18 +13,56 @@ type ConfigInput = {
   updatedById?: string;
 };
 
+function isMaskedApiKey(value: string | null | undefined): boolean {
+  return typeof value === "string" && value.includes("*");
+}
+
+function normalizeApiBaseUrl(url: string): string {
+  return url.trim().replace(/\/$/, "").replace(/\/chat\/completions$/i, "");
+}
+
+function extractTextFromMessageContent(content: unknown): string {
+  if (typeof content === "string") {
+    return content.trim();
+  }
+
+  if (!Array.isArray(content)) {
+    return "";
+  }
+
+  const parts: string[] = [];
+  for (const item of content) {
+    if (typeof item === "string") {
+      parts.push(item);
+      continue;
+    }
+
+    if (typeof item === "object" && item !== null) {
+      const text = (item as { text?: unknown }).text;
+      if (typeof text === "string") {
+        parts.push(text);
+      }
+    }
+  }
+
+  return parts.join("\n").trim();
+}
+
 export class LlmService {
   async getConfig(): Promise<LlmConfig | null> {
     return prisma.llmConfig.findUnique({ where: { id: "default" } });
   }
 
   async saveConfig(data: ConfigInput): Promise<LlmConfig> {
+    const current = await this.getConfig();
+    const apiKey = !data.apiKey || isMaskedApiKey(data.apiKey) ? current?.apiKey ?? "" : data.apiKey;
+
     return prisma.llmConfig.upsert({
       where: { id: "default" },
       update: {
         provider: data.provider,
         apiBaseUrl: data.apiBaseUrl,
-        apiKey: data.apiKey,
+        apiKey,
         defaultModel: data.defaultModel,
         temperature: data.temperature,
         maxTokens: data.maxTokens,
@@ -34,7 +72,7 @@ export class LlmService {
         id: "default",
         provider: data.provider,
         apiBaseUrl: data.apiBaseUrl,
-        apiKey: data.apiKey,
+        apiKey,
         defaultModel: data.defaultModel,
         temperature: data.temperature,
         maxTokens: data.maxTokens,
@@ -45,7 +83,22 @@ export class LlmService {
   }
 
   async testConnection(configInput: ConfigInput): Promise<{ success: boolean; response: string }> {
-    const ping = await this.callLlm(configInput as LlmConfig, { ping: true }, configInput.defaultModel);
+    const current = await this.getConfig();
+    const effectiveApiKey = !configInput.apiKey || isMaskedApiKey(configInput.apiKey) ? current?.apiKey ?? "" : configInput.apiKey;
+
+    if (!effectiveApiKey) {
+      throw new Error("LLM API key is not configured");
+    }
+
+    const ping = await this.callLlm({
+      ...(current as LlmConfig | null),
+      ...configInput,
+      id: current?.id ?? "default",
+      apiKey: effectiveApiKey,
+      isActive: current?.isActive ?? true,
+      updatedAt: current?.updatedAt ?? new Date(),
+      updatedById: configInput.updatedById ?? current?.updatedById ?? null
+    } as LlmConfig, { ping: true }, configInput.defaultModel, { pingMode: true });
     return { success: true, response: ping.slice(0, 500) };
   }
 
@@ -71,26 +124,40 @@ export class LlmService {
     return this.callLlm(mergedConfig, aggregatedData);
   }
 
-  private async callLlm(currentConfig: LlmConfig, request: unknown, modelOverride?: string): Promise<string> {
-    const endpoint = `${currentConfig.apiBaseUrl.replace(/\/$/, "")}/chat/completions`;
+  private async callLlm(
+    currentConfig: LlmConfig,
+    request: unknown,
+    modelOverride?: string,
+    options?: { pingMode?: boolean }
+  ): Promise<string> {
+    const endpoint = `${normalizeApiBaseUrl(currentConfig.apiBaseUrl)}/chat/completions`;
+    const model = (modelOverride ?? currentConfig.defaultModel).trim().replace(/^~/, "");
+    if (!model) {
+      throw new Error("LLM model is not configured");
+    }
+
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${currentConfig.apiKey}`
+      Authorization: `Bearer ${currentConfig.apiKey.trim()}`
     };
 
     if (currentConfig.provider === ProviderType.OPENROUTER) {
       headers["HTTP-Referer"] = config.appUrl;
-      headers["X-Title"] = config.appTitle;
+      headers["X-OpenRouter-Title"] = config.appTitle;
     }
 
+    const messages = options?.pingMode
+      ? [{ role: "user", content: "Reply with exactly: OK" }]
+      : [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: JSON.stringify(request) }
+        ];
+
     const payload = {
-      model: modelOverride ?? currentConfig.defaultModel,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: JSON.stringify(request) }
-      ],
-      temperature: currentConfig.temperature,
-      max_tokens: currentConfig.maxTokens
+      model,
+      messages,
+      temperature: options?.pingMode ? 0 : currentConfig.temperature,
+      max_tokens: options?.pingMode ? 512 : currentConfig.maxTokens
     };
 
     const response = await fetch(endpoint, {
@@ -101,18 +168,39 @@ export class LlmService {
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`LLM API error ${response.status}: ${body}`);
+      try {
+        const parsed = JSON.parse(body) as { error?: { message?: string } };
+        const message = parsed.error?.message;
+        throw new Error(`LLM API error ${response.status}: ${message ?? body}`);
+      } catch {
+        throw new Error(`LLM API error ${response.status}: ${body}`);
+      }
     }
 
     const data = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
+      choices?: Array<{
+        message?: { content?: unknown; refusal?: unknown };
+        text?: unknown;
+        finish_reason?: unknown;
+      }>;
     };
 
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new Error("LLM returned empty content");
+    const firstChoice = data.choices?.[0];
+    const content = extractTextFromMessageContent(firstChoice?.message?.content);
+    if (content) {
+      return content;
     }
 
-    return content;
+    if (typeof firstChoice?.text === "string" && firstChoice.text.trim()) {
+      return firstChoice.text.trim();
+    }
+
+    const refusal = firstChoice?.message?.refusal;
+    if (typeof refusal === "string" && refusal.trim()) {
+      throw new Error(`LLM refused request: ${refusal.trim()}`);
+    }
+
+    const finishReason = typeof firstChoice?.finish_reason === "string" ? firstChoice.finish_reason : "unknown";
+    throw new Error(`LLM returned empty content (finish_reason: ${finishReason})`);
   }
 }
